@@ -13,11 +13,8 @@ USE NETFLIX;
 -- ==========================================================
 -- PARTE 7 - TRIGGERS
 -- ----------------------------------------------------------
--- Estrutura de cada exemplo:
---   1) Comentário explicando a regra e o tipo da trigger
---   2) Criação da trigger
---   3) Comando que faz a trigger ser executada (teste)
---   4) SELECT para conferir o resultado
+-- Cada exemplo tem: a regra, a criação da trigger, o comando
+-- que a dispara e um SELECT para conferir o resultado.
 -- ==========================================================
 
 -- ==========================================================
@@ -32,7 +29,6 @@ USE NETFLIX;
 DROP TRIGGER IF EXISTS tg_validar_minuto_parada;
 
 DELIMITER //
-
 CREATE TRIGGER tg_validar_minuto_parada
 -- BEFORE executa antes da gravação no banco,
 -- permitindo alterar ou validar valores
@@ -40,15 +36,12 @@ BEFORE INSERT ON historico_visualizacao
 -- Executa para cada registro inserido
 FOR EACH ROW
 BEGIN
-
     -- NEW representa o registro que está tentando ser inserido
     IF NEW.minuto_parada < 0 THEN
         -- Altera o valor antes da gravação
         SET NEW.minuto_parada = 0;
     END IF;
-
 END //
-
 DELIMITER ;
 
 -- Comando que dispara a trigger:
@@ -76,19 +69,14 @@ WHERE id_perfil = 1 AND id_titulo = 1;
 DROP TRIGGER IF EXISTS tg_validar_dia_vencimento;
 
 DELIMITER //
-
 CREATE TRIGGER tg_validar_dia_vencimento
 BEFORE INSERT ON dados_cobranca
 FOR EACH ROW
 BEGIN
-
     IF NEW.dia_vencimento > 28 THEN
-        -- Modifica o valor antes de salvar
         SET NEW.dia_vencimento = 28;
     END IF;
-
 END //
-
 DELIMITER ;
 
 -- Comando que dispara a trigger:
@@ -119,20 +107,14 @@ WHERE id_conta = 5;
 DROP TRIGGER IF EXISTS tg_validar_valor_plano;
 
 DELIMITER //
-
 CREATE TRIGGER tg_validar_valor_plano
 BEFORE UPDATE ON plano
--- Executa para cada plano alterado
 FOR EACH ROW
 BEGIN
-
     IF NEW.valor_mensal < 0 THEN
-        -- Mantém o valor antigo
         SET NEW.valor_mensal = OLD.valor_mensal;
     END IF;
-
 END //
-
 DELIMITER ;
 
 -- Comando que dispara a trigger:

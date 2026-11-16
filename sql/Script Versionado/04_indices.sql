@@ -13,12 +13,8 @@ USE NETFLIX;
 -- ==========================================================
 -- PARTE 4 - ÍNDICES
 -- ----------------------------------------------------------
--- Um índice funciona como o índice de um livro: o banco
--- encontra as linhas sem precisar ler a tabela inteira.
---
--- Observação: as chaves primárias, as chaves estrangeiras e os
--- campos UNIQUE já têm índice criado automaticamente pelo
--- MySQL. Por isso os índices abaixo foram criados em campos
+-- Chaves primárias, chaves estrangeiras e campos UNIQUE já têm
+-- índice automático no MySQL. Os índices abaixo são em campos
 -- que NÃO são chave, mas são muito usados em buscas.
 -- ==========================================================
 

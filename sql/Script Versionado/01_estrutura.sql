@@ -24,22 +24,9 @@ USE NETFLIX;
 
 
 -- ----------------------------------------------------------
--- Ordem de criação:
--- uma tabela com chave estrangeira só pode ser criada
--- DEPOIS da tabela que ela referencia.
---
---   Grupo 1 (sem chave estrangeira):
---     plano, categoria, pessoa, titulo
---   Grupo 2:
---     conta (-> plano), temporada (-> titulo)
---   Grupo 3:
---     dados_cobranca (-> conta), perfil (-> conta),
---     episodio (-> temporada)
---   Grupo 4:
---     configuracao_perfil (-> perfil),
---     titulo_categoria (-> titulo, categoria),
---     participacao (-> pessoa, titulo),
---     historico_visualizacao (-> perfil, titulo)
+-- Ordem de criação: uma tabela com chave estrangeira só pode
+-- ser criada DEPOIS da tabela que ela referencia. Por isso as
+-- tabelas estão em 4 grupos, das independentes às dependentes.
 -- ----------------------------------------------------------
 
 

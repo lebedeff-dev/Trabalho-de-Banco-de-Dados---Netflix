@@ -14,13 +14,6 @@ USE NETFLIX;
 -- PARTE 3 - CONSULTAS SQL
 -- ----------------------------------------------------------
 -- 12 consultas com JOINs, filtros, agrupamentos e ordenação.
--- Seguem os tipos trabalhados nos exercícios da professora:
---   INNER JOIN ........ consultas 01, 02 e 03
---   LEFT JOIN ......... consultas 04 e 05
---   RIGHT JOIN ........ consultas 06 e 07
---   SELF JOIN ......... consulta  08
---   GROUP BY / HAVING . consultas 09, 11 e 12
---   Filtros (WHERE) ... consulta  10
 -- ==========================================================
 
 -- ----------------------------------------------------------
