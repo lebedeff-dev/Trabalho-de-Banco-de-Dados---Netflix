@@ -38,7 +38,7 @@ Uma FK aponta para uma tabela que **já precisa existir**. Por isso, primeiro as
 | `ENUM` | O campo só aceita uma lista fixa de valores | `status ENUM('Ativa','Suspensa','Cancelada')` | `bd_supermercado.sql` (FAIXA_COMISSAO) |
 | `FOREIGN KEY ... REFERENCES` | Liga uma tabela à outra | `FOREIGN KEY (id_plano) REFERENCES plano (id_plano)` | `bd_supermercado.sql` |
 | `ON DELETE / ON UPDATE CASCADE` | Propaga exclusão/alteração aos filhos | quase todas as FKs | tabela `IMAGEM` do `bd_supermercado.sql`, com comentário explicativo |
-| `ON DELETE RESTRICT` | Impede excluir o pai se houver filhos | conta→plano, titulo_categoria→categoria | mesmo bloco da `IMAGEM` (a outra opção ao lado do CASCADE) |
+| `ON DELETE RESTRICT` | Impede excluir o pai se houver filhos | conta→plano, titulo_categoria→categoria | **Não aparece nos scripts dela** (ela só usa CASCADE). Veio do modelo lógico aprovado, que já definia RESTRICT nessas duas FKs |
 
 > **Ponto de honestidade para a apresentação:** o `UNIQUE` **composto** (`UNIQUE (id_perfil, nome)`, dois campos juntos) é o mesmo comando do UNIQUE simples, só com duas colunas. A professora usa chave composta em `PRIMARY KEY (CODIGO_PEDIDO, CODIGO_PRODUTO)`. O modelo aprovado já tinha esses UNIQUE compostos, por isso eles estão no script.
 

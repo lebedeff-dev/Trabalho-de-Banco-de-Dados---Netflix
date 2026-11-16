@@ -1,16 +1,18 @@
 # Passo a passo (arquivo `sql/netflix_bd.sql`)
 
-Um arquivo só, na ordem abaixo. Estilo em [[Padroes dos scripts da professora]].
+Um arquivo só, na ordem dos critérios da rubrica. Estilo em [[Padroes dos scripts da professora]]. Conferência final em [[Comparacao com a rubrica]].
 
-- [x] **1. Banco**: `DROP DATABASE IF EXISTS`, `CREATE DATABASE` (utf8mb4), `USE` (feito, ver [[Parte 1 - Estrutura (explicacao)]])
-- [x] **2. Tabelas** (feito e testado): 13 `CREATE TABLE` na ordem de [[Modelo logico Netflix]]. Escritas à mão no estilo de `bd_supermercado.sql`, **fiéis ao modelo aprovado** (mesmos campos, tipos, PK/FK, UNIQUE e ON DELETE/UPDATE do `.mwb`)
-- [x] **3. Inserts** (feito e testado, ver [[Parte 2 - Inserts (explicacao)]]): 30+ por tabela (13 tabelas, ~400 linhas), mesma ordem do passo 2. Pensar os dados para que LEFT/RIGHT JOIN tenham casos sem correspondência
-- [ ] **4. Consultas**: INNER/LEFT/RIGHT/SELF JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT
-- [ ] **5. Índice** + comentário de justificativa (ver lacuna em [[Mapa dos materiais]])
-- [ ] **6. Views** (ver lacuna)
-- [ ] **7. Triggers**: modelo da professora (log em tabela de histórico, validação)
-- [ ] **8. Usuários**: `CREATE USER`, `GRANT`, `REVOKE`
-- [ ] **9. Transações**: `START TRANSACTION`, `COMMIT`, `ROLLBACK`, `SAVEPOINT`
-- [ ] **10. README** do repositório e commit
+- [x] **Parte 1 - Estrutura**: banco + 13 tabelas, fiéis ao modelo aprovado → [[Parte 1 - Estrutura (explicacao)]]
+- [x] **Parte 2 - Inserts**: 712 comandos, 30+ por tabela, com casos sem correspondência → [[Parte 2 - Inserts (explicacao)]]
+- [x] **Parte 3 - Consultas**: 12 (INNER, LEFT, RIGHT, SELF JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT) → [[Parte 3 - Consultas (explicacao)]]
+- [x] **Parte 4 - Índices**: 2, com justificativa → [[Partes 4 e 5 - Indices e procedures (explicacao)]]
+- [x] **Parte 5 - Stored procedures**: 3 (scripts adicionais)
+- [x] **Parte 6 - Views**: 3 → [[Partes 6 a 9 - Views, triggers, usuarios e transacoes (explicacao)]]
+- [x] **Parte 7 - Triggers**: 3 (BEFORE INSERT, BEFORE INSERT com SIGNAL, AFTER UPDATE)
+- [x] **Parte 8 - Usuários**: 5 usuários, GRANT e REVOKE
+- [x] **Parte 9 - Transações**: COMMIT, ROLLBACK, SAVEPOINT
+- [x] README e commits no GitHub
 
-Prazo: **18/11/2026 23:59**.
+## Falta (por sua conta)
+- [ ] Rodar o arquivo no seu MySQL Workbench
+- [ ] Enviar no AVA até **18/11/2026 23:59**

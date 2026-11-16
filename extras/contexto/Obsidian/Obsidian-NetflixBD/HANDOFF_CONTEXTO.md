@@ -12,6 +12,14 @@ Leia isto primeiro se você é uma IA ou pessoa retomando o trabalho.
 7. O modelo Netflix **não será alterado**: a professora o aprovou com 12/12 (ver [[Feedback da professora (modelo logico)]]). A implementação segue o modelo à risca ([[Modelo logico Netflix]]).
 8. Qualquer coisa que **não esteja nos materiais da professora é removida/evitada**. Só entra o que está nos scripts ou nos PDFs dela.
 
+## Estado atual (16/11/2026)
+O script `sql/netflix_bd.sql` está completo (partes 1 a 9) e testado em MySQL 8. A conferência contra a rubrica está em [[Comparacao com a rubrica]]. Falta só o dono rodar no Workbench dele e enviar no AVA.
+
+Decisões tomadas:
+- "Scripts adicionais" da rubrica = stored procedures (a rubrica não especifica; é o que os materiais dela têm).
+- Triggers usam só as 13 tabelas do modelo (sem tabela de log), para não fugir da modelagem.
+- Um `INSERT` por linha, para cada linha contar como um comando.
+
 ## Entrega
 Um arquivo `.sql` com: estrutura, inserts (30+ por tabela), consultas, índice com justificativa, views, triggers, usuários/permissões e transações. Ver [[Rubrica AT1]].
 

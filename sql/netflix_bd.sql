@@ -9,9 +9,25 @@
 --
 -- Estilo baseado no bd_supermercado.sql da professora.
 --
--- Conteúdo deste arquivo, em ordem:
---   PARTE 1 - Estrutura (banco e tabelas)
---   PARTE 2 - Inserção de dados (mínimo de 30 INSERT por tabela)
+-- Conteúdo deste arquivo, na ordem dos critérios da atividade:
+--
+--   Critério "Estrutura do banco de dados"
+--     PARTE 1 - Estrutura (banco e 13 tabelas)
+--   Critério "Inserção de dados"
+--     PARTE 2 - Inserção de dados (mínimo de 30 INSERT por tabela)
+--   Critério "Consultas SQL (queries)"
+--     PARTE 3 - Consultas (JOINs, filtros, agrupamentos, ordenação)
+--   Critério "Scripts adicionais e índices"
+--     PARTE 4 - Índices (com justificativa do campo indexado)
+--     PARTE 5 - Stored procedures
+--   Critério "Recursos adicionais do banco"
+--     PARTE 6 - Views
+--     PARTE 7 - Triggers
+--     PARTE 8 - Usuários e permissões (GRANT e REVOKE)
+--     PARTE 9 - Transações (COMMIT, ROLLBACK e SAVEPOINT)
+--
+-- Como executar: abra este arquivo no MySQL Workbench e execute
+-- tudo (o script recria o banco do zero a cada execução).
 -- ==========================================================
 
 
@@ -1093,3 +1109,765 @@ INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_
 INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_inicio, data_ultima_visualizacao, minuto_parada, concluido, dispositivo) VALUES (78, 14, 21, '2026-10-23 01:38:00', '2026-10-23 07:36:00', 138, 1, 'Tablet');
 INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_inicio, data_ultima_visualizacao, minuto_parada, concluido, dispositivo) VALUES (79, 3, 31, '2026-10-29 12:01:00', '2026-10-29 20:09:00', 44, 0, 'Console');
 INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_inicio, data_ultima_visualizacao, minuto_parada, concluido, dispositivo) VALUES (80, 20, 23, '2026-10-26 11:23:00', '2026-10-26 13:02:00', 156, 1, 'Notebook');
+
+
+-- ==========================================================
+-- PARTE 3 - CONSULTAS SQL
+-- ----------------------------------------------------------
+-- 12 consultas com JOINs, filtros, agrupamentos e ordenação.
+-- Seguem os tipos trabalhados nos exercícios da professora:
+--   INNER JOIN ........ consultas 01, 02 e 03
+--   LEFT JOIN ......... consultas 04 e 05
+--   RIGHT JOIN ........ consultas 06 e 07
+--   SELF JOIN ......... consulta  08
+--   GROUP BY / HAVING . consultas 09, 11 e 12
+--   Filtros (WHERE) ... consulta  10
+-- ==========================================================
+
+-- ----------------------------------------------------------
+-- CONSULTA 01 - INNER JOIN - 2 tabelas
+-- Lista o e-mail, o país, o nome do plano e o valor mensal
+-- de todas as contas ATIVAS, em ordem de e-mail.
+-- Tabelas: conta, plano
+-- ----------------------------------------------------------
+SELECT C.email, C.pais, P.nome AS plano, P.valor_mensal
+FROM conta C
+INNER JOIN plano P ON P.id_plano = C.id_plano
+WHERE C.status = 'Ativa'
+ORDER BY C.email;
+
+-- ----------------------------------------------------------
+-- CONSULTA 02 - INNER JOIN - 3 tabelas
+-- Mostra cada perfil com o e-mail da conta e o plano contratado,
+-- apenas dos perfis infantis.
+-- Tabelas: perfil, conta, plano
+-- ----------------------------------------------------------
+SELECT PF.nome AS perfil, C.email, P.nome AS plano, P.telas_simultaneas
+FROM perfil PF
+INNER JOIN conta C ON C.id_conta = PF.id_conta
+INNER JOIN plano P ON P.id_plano = C.id_plano
+WHERE PF.perfil_infantil = 1
+ORDER BY C.email;
+
+-- ----------------------------------------------------------
+-- CONSULTA 03 - INNER JOIN - 7 tabelas
+-- Relatório do que foi assistido ATÉ O FIM: perfil, e-mail da
+-- conta, plano, título, tipo, categoria principal, dispositivo
+-- e data de início formatada.
+-- Tabelas: historico_visualizacao, perfil, conta, plano,
+--          titulo, titulo_categoria, categoria
+-- ----------------------------------------------------------
+SELECT PF.nome                              AS perfil,
+       C.email                              AS conta,
+       P.nome                               AS plano,
+       T.nome                               AS titulo,
+       T.tipo,
+       CA.nome                              AS categoria_principal,
+       H.dispositivo,
+       DATE_FORMAT(H.data_inicio, '%d/%m/%Y') AS assistido_em
+FROM historico_visualizacao H
+INNER JOIN perfil           PF ON PF.id_perfil   = H.id_perfil
+INNER JOIN conta            C  ON C.id_conta     = PF.id_conta
+INNER JOIN plano            P  ON P.id_plano     = C.id_plano
+INNER JOIN titulo           T  ON T.id_titulo    = H.id_titulo
+INNER JOIN titulo_categoria TC ON TC.id_titulo   = T.id_titulo
+INNER JOIN categoria        CA ON CA.id_categoria = TC.id_categoria
+WHERE H.concluido = 1
+  AND TC.categoria_principal = 1
+ORDER BY H.data_inicio;
+-- Comentário: sem o filtro categoria_principal = 1, cada
+-- visualização apareceria repetida, uma vez por categoria do título.
+
+-- ----------------------------------------------------------
+-- CONSULTA 04 - LEFT JOIN - 2 tabelas
+-- Lista os títulos que NUNCA foram assistidos.
+-- O LEFT JOIN mantém todos os títulos; os que não têm histórico
+-- ficam com NULL, e o WHERE seleciona exatamente esses.
+-- Tabelas: titulo, historico_visualizacao
+-- ----------------------------------------------------------
+SELECT T.id_titulo, T.nome, T.tipo, T.ano_lancamento
+FROM titulo T
+LEFT JOIN historico_visualizacao H ON H.id_titulo = T.id_titulo
+WHERE H.id_visualizacao IS NULL
+ORDER BY T.nome;
+
+-- ----------------------------------------------------------
+-- CONSULTA 05 - LEFT JOIN - 3 tabelas (com agrupamento)
+-- Para CADA conta, mostra o e-mail, o plano e a quantidade de
+-- perfis. Contas sem perfil aparecem com 0.
+-- Tabelas: conta, plano, perfil
+-- ----------------------------------------------------------
+SELECT C.email,
+       P.nome            AS plano,
+       COUNT(PF.id_perfil) AS qtd_perfis
+FROM conta C
+INNER JOIN plano  P  ON P.id_plano  = C.id_plano
+LEFT  JOIN perfil PF ON PF.id_conta = C.id_conta
+GROUP BY C.id_conta, C.email, P.nome
+ORDER BY qtd_perfis DESC, C.email;
+-- Comentário: COUNT(PF.id_perfil) conta só valores não nulos.
+-- COUNT(*) daria 1 para as contas sem perfil.
+
+-- ----------------------------------------------------------
+-- CONSULTA 06 - RIGHT JOIN - 2 tabelas
+-- Lista TODAS as temporadas com seus episódios. As temporadas
+-- que ainda não têm episódio também aparecem (com NULL).
+-- Tabelas: episodio, temporada (nesta ordem no FROM)
+-- ----------------------------------------------------------
+SELECT TE.id_temporada, TE.numero_temporada, E.numero_episodio, E.titulo_episodio
+FROM episodio E
+RIGHT JOIN temporada TE ON TE.id_temporada = E.id_temporada
+ORDER BY TE.id_temporada, E.numero_episodio;
+-- Comentário: temporada está à DIREITA, então todas as temporadas
+-- são preservadas. É o LEFT JOIN "espelhado".
+
+-- ----------------------------------------------------------
+-- CONSULTA 07 - RIGHT JOIN - 3 tabelas (com agrupamento)
+-- Mostra TODOS os perfis, o e-mail da conta, a quantidade de
+-- títulos assistidos e o total de minutos. Perfis que nunca
+-- assistiram a nada aparecem com 0.
+-- Tabelas: historico_visualizacao, perfil, conta
+-- ----------------------------------------------------------
+SELECT PF.nome                         AS perfil,
+       C.email,
+       COUNT(H.id_visualizacao)        AS qtd_titulos,
+       COALESCE(SUM(H.minuto_parada), 0) AS minutos_assistidos
+FROM historico_visualizacao H
+RIGHT JOIN perfil PF ON PF.id_perfil = H.id_perfil
+INNER JOIN conta  C  ON C.id_conta   = PF.id_conta
+GROUP BY PF.id_perfil, PF.nome, C.email
+ORDER BY minutos_assistidos DESC;
+-- Comentário: COALESCE troca o NULL da soma por 0.
+
+-- ----------------------------------------------------------
+-- CONSULTA 08 - SELF JOIN
+-- Lista os pares de títulos do MESMO tipo lançados no MESMO ano.
+-- Cada par aparece uma única vez e um título não forma par
+-- com ele mesmo.
+-- Tabela: titulo (unida com ela mesma)
+-- ----------------------------------------------------------
+SELECT A.nome AS titulo_1, B.nome AS titulo_2, A.tipo, A.ano_lancamento
+FROM titulo A
+INNER JOIN titulo B
+        ON A.tipo = B.tipo
+       AND A.ano_lancamento = B.ano_lancamento
+       AND A.id_titulo < B.id_titulo
+ORDER BY A.ano_lancamento, A.nome;
+-- Comentário: A.id_titulo < B.id_titulo evita o título pareado com
+-- ele mesmo e os pares repetidos invertidos.
+
+-- ----------------------------------------------------------
+-- CONSULTA 09 - GROUP BY com HAVING
+-- Categorias que têm 5 ou mais títulos, da maior para a menor.
+-- Tabelas: categoria, titulo_categoria
+-- ----------------------------------------------------------
+SELECT CA.nome AS categoria, COUNT(*) AS qtd_titulos
+FROM categoria CA
+INNER JOIN titulo_categoria TC ON TC.id_categoria = CA.id_categoria
+GROUP BY CA.id_categoria, CA.nome
+HAVING COUNT(*) >= 5
+ORDER BY qtd_titulos DESC, CA.nome;
+-- Comentário: WHERE filtra linhas antes de agrupar;
+-- HAVING filtra os grupos depois do agrupamento.
+
+-- ----------------------------------------------------------
+-- CONSULTA 10 - Filtros (WHERE com AND, OR, LIKE e IS NULL)
+-- Contas do Brasil que precisam de atenção do atendimento:
+-- estão suspensas, canceladas ou não têm telefone cadastrado.
+-- Tabela: conta
+-- ----------------------------------------------------------
+SELECT id_conta, email, telefone, status
+FROM conta
+WHERE pais = 'BR'
+  AND email LIKE '%@exemplo.com'
+  AND (status = 'Suspensa' OR status = 'Cancelada' OR telefone IS NULL)
+ORDER BY status, email;
+
+-- ----------------------------------------------------------
+-- CONSULTA 11 - Os 5 títulos mais assistidos
+-- Agrupa o histórico por título, ordena pela quantidade e
+-- limita o resultado.
+-- Tabelas: titulo, historico_visualizacao
+-- ----------------------------------------------------------
+SELECT T.nome AS titulo, T.tipo, COUNT(*) AS visualizacoes
+FROM titulo T
+INNER JOIN historico_visualizacao H ON H.id_titulo = T.id_titulo
+GROUP BY T.id_titulo, T.nome, T.tipo
+ORDER BY visualizacoes DESC, T.nome
+LIMIT 5;
+
+-- ----------------------------------------------------------
+-- CONSULTA 12 - Receita mensal por plano
+-- Soma o valor mensal das contas ATIVAS de cada plano e mostra
+-- apenas os planos com receita acima de R$ 100,00.
+-- Tabelas: plano, conta
+-- ----------------------------------------------------------
+SELECT P.nome                AS plano,
+       COUNT(C.id_conta)     AS contas_ativas,
+       SUM(P.valor_mensal)   AS receita_mensal
+FROM plano P
+INNER JOIN conta C ON C.id_plano = P.id_plano
+WHERE C.status = 'Ativa'
+GROUP BY P.id_plano, P.nome
+HAVING SUM(P.valor_mensal) > 100
+ORDER BY receita_mensal DESC;
+
+
+-- ==========================================================
+-- PARTE 4 - ÍNDICES
+-- ----------------------------------------------------------
+-- Um índice funciona como o índice de um livro: o banco
+-- encontra as linhas sem precisar ler a tabela inteira.
+--
+-- Observação: as chaves primárias, as chaves estrangeiras e os
+-- campos UNIQUE já têm índice criado automaticamente pelo
+-- MySQL. Por isso os índices abaixo foram criados em campos
+-- que NÃO são chave, mas são muito usados em buscas.
+-- ==========================================================
+
+-- ÍNDICE 1 - nome do título
+-- Justificativa: a busca por nome é a pesquisa mais comum em um
+-- catálogo de streaming (o usuário digita o nome do filme ou da
+-- série). O campo nome não é chave nem UNIQUE, então não tinha
+-- índice. A tabela titulo também é a que mais cresce no catálogo.
+CREATE INDEX idx_titulo_nome ON titulo (nome);
+
+-- Consulta que aproveita o índice:
+SELECT id_titulo, nome, tipo
+FROM titulo
+WHERE nome LIKE 'O%'
+ORDER BY nome;
+
+-- ÍNDICE 2 - data de início da visualização
+-- Justificativa: historico_visualizacao é a tabela que mais
+-- recebe registros (cada vez que alguém assiste a algo) e os
+-- relatórios costumam ser por período ("o que foi assistido em
+-- outubro"). O campo data_inicio é usado no WHERE e no ORDER BY
+-- desses relatórios e não tinha índice.
+CREATE INDEX idx_historico_data_inicio ON historico_visualizacao (data_inicio);
+
+-- Consulta que aproveita o índice:
+SELECT id_visualizacao, id_perfil, id_titulo, data_inicio
+FROM historico_visualizacao
+WHERE data_inicio >= '2026-10-01' AND data_inicio < '2026-11-01'
+ORDER BY data_inicio;
+
+
+-- ==========================================================
+-- PARTE 5 - STORED PROCEDURES (scripts adicionais)
+-- ----------------------------------------------------------
+-- Uma procedure guarda um bloco de comandos no banco para ser
+-- executado com CALL.
+-- ==========================================================
+
+-- 1) Procedure sem parâmetro - Relatório de contas por plano
+DELIMITER //
+
+CREATE PROCEDURE sp_contas_por_plano()
+BEGIN
+
+    SELECT P.nome AS plano, COUNT(C.id_conta) AS qtd_contas
+    FROM plano P
+    LEFT JOIN conta C ON C.id_plano = P.id_plano
+    GROUP BY P.id_plano, P.nome
+    ORDER BY qtd_contas DESC, P.nome;
+
+END //
+
+DELIMITER ;
+
+-- Execução:
+CALL sp_contas_por_plano();
+
+-- 2) Procedure com parâmetro - Buscar títulos por faixa de ano
+DELIMITER //
+
+CREATE PROCEDURE sp_titulos_por_ano(IN ano_min SMALLINT, IN ano_max SMALLINT)
+BEGIN
+
+    SELECT id_titulo, nome, tipo, ano_lancamento
+    FROM titulo
+    WHERE ano_lancamento BETWEEN ano_min AND ano_max
+    ORDER BY ano_lancamento, nome;
+
+END //
+
+DELIMITER ;
+
+-- Execução:
+CALL sp_titulos_por_ano(2020, 2023);
+
+-- 3) Procedure com parâmetro - Alterar o status de uma conta
+DELIMITER //
+
+CREATE PROCEDURE sp_alterar_status_conta(IN conta_id INT, IN novo_status VARCHAR(10))
+BEGIN
+
+    UPDATE conta
+    SET status = novo_status
+    WHERE id_conta = conta_id;
+
+END //
+
+DELIMITER ;
+
+-- Execução: a conta 2 é suspensa
+CALL sp_alterar_status_conta(2, 'Suspensa');
+
+SELECT id_conta, email, status FROM conta WHERE id_conta = 2;
+
+-- Volta a conta 2 para o estado original
+CALL sp_alterar_status_conta(2, 'Ativa');
+
+
+-- ==========================================================
+-- PARTE 6 - VIEWS
+-- ----------------------------------------------------------
+-- Uma VIEW é uma tabela virtual: ela guarda uma consulta
+-- (SELECT) com um nome. Os dados continuam nas tabelas
+-- originais; a view só mostra o resultado.
+-- ==========================================================
+
+-- VIEW 1 - Contas ativas com o plano
+-- Mostra os dados da conta SEM a senha (senha_hash fica de fora).
+CREATE VIEW vw_contas_ativas AS
+SELECT C.id_conta, C.email, C.pais, C.data_cadastro,
+       P.nome AS plano, P.valor_mensal, P.qualidade_maxima
+FROM conta C
+INNER JOIN plano P ON P.id_plano = C.id_plano
+WHERE C.status = 'Ativa';
+
+-- Usando a view como se fosse uma tabela:
+SELECT * FROM vw_contas_ativas ORDER BY email;
+
+-- VIEW 2 - Catálogo com a categoria principal
+-- LEFT JOIN para os títulos sem categoria também aparecerem.
+CREATE VIEW vw_catalogo AS
+SELECT T.id_titulo, T.nome, T.tipo, T.ano_lancamento,
+       T.classificacao_indicativa, CA.nome AS categoria_principal
+FROM titulo T
+LEFT JOIN titulo_categoria TC ON TC.id_titulo = T.id_titulo
+                             AND TC.categoria_principal = 1
+LEFT JOIN categoria CA ON CA.id_categoria = TC.id_categoria
+WHERE T.disponivel = 1;
+
+SELECT * FROM vw_catalogo ORDER BY nome;
+
+-- VIEW 3 - Ranking de títulos assistidos
+CREATE VIEW vw_ranking_titulos AS
+SELECT T.id_titulo, T.nome, T.tipo,
+       COUNT(H.id_visualizacao) AS visualizacoes
+FROM titulo T
+LEFT JOIN historico_visualizacao H ON H.id_titulo = T.id_titulo
+GROUP BY T.id_titulo, T.nome, T.tipo;
+
+SELECT * FROM vw_ranking_titulos ORDER BY visualizacoes DESC LIMIT 10;
+
+
+-- ==========================================================
+-- PARTE 7 - TRIGGERS
+-- ----------------------------------------------------------
+-- Estrutura de cada exemplo:
+--   1) Comentário explicando a regra e o tipo da trigger
+--   2) Criação da trigger
+--   3) Comando que faz a trigger ser executada (teste)
+--   4) SELECT para conferir o resultado
+-- ==========================================================
+
+-- ==========================================================
+-- TRIGGER 1
+-- Regra:
+-- Não permitir registrar visualização com minuto negativo.
+-- Se vier um valor negativo, ele é trocado por 0.
+--
+-- Tipo:
+-- BEFORE INSERT
+-- ==========================================================
+DROP TRIGGER IF EXISTS tg_validar_minuto_parada;
+
+DELIMITER //
+
+CREATE TRIGGER tg_validar_minuto_parada
+-- BEFORE executa antes da gravação no banco,
+-- permitindo alterar ou validar valores
+BEFORE INSERT ON historico_visualizacao
+FOR EACH ROW
+BEGIN
+
+    -- NEW representa o registro que está tentando ser inserido
+    IF NEW.minuto_parada < 0 THEN
+        -- Altera o valor antes da gravação
+        SET NEW.minuto_parada = 0;
+    END IF;
+
+END //
+
+DELIMITER ;
+
+-- Comando que dispara a trigger:
+-- o perfil 1 começa a assistir ao título 1 com minuto negativo
+INSERT INTO historico_visualizacao (id_perfil, id_titulo, minuto_parada, dispositivo)
+VALUES (1, 1, -10, 'TV');
+
+-- Conferindo o resultado:
+-- o minuto_parada deve aparecer como 0, e não -10
+SELECT id_visualizacao, id_perfil, id_titulo, minuto_parada, dispositivo
+FROM historico_visualizacao
+WHERE id_perfil = 1 AND id_titulo = 1;
+
+
+-- ==========================================================
+-- TRIGGER 2
+-- Regra:
+-- Não permitir criar perfil em uma conta CANCELADA.
+--
+-- Tipo:
+-- BEFORE INSERT
+--
+-- Aqui a trigger RECUSA a operação: o SIGNAL gera um erro,
+-- o INSERT é cancelado e nada é gravado.
+-- SQLSTATE '45000' é o código usado para erros definidos
+-- pelo próprio programador.
+-- ==========================================================
+DROP TRIGGER IF EXISTS tg_validar_perfil;
+
+DELIMITER //
+
+CREATE TRIGGER tg_validar_perfil
+BEFORE INSERT ON perfil
+FOR EACH ROW
+BEGIN
+
+    -- DECLARE cria uma variável local dentro da trigger
+    DECLARE v_status VARCHAR(10);
+
+    -- Busca o status da conta do novo perfil
+    -- e guarda na variável v_status
+    SELECT status INTO v_status
+    FROM conta
+    WHERE id_conta = NEW.id_conta;
+
+    -- Se a conta estiver cancelada, a operação é bloqueada
+    IF v_status = 'Cancelada' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Conta cancelada: nao e possivel criar perfil.';
+    END IF;
+
+END //
+
+DELIMITER ;
+
+-- Comando que dispara a trigger (caso válido):
+-- a conta 1 está ativa, então o perfil é criado
+INSERT INTO perfil (id_conta, nome, data_criacao)
+VALUES (1, 'Teste Trigger', '2026-11-16');
+
+-- Conferindo o resultado
+SELECT id_perfil, id_conta, nome, data_criacao
+FROM perfil
+WHERE id_conta = 1;
+
+-- Comando que dispara a trigger (caso bloqueado):
+-- a conta 11 está cancelada.
+--
+-- ATENÇÃO: este comando VAI GERAR ERRO de propósito.
+-- Ele está comentado para não interromper a execução do
+-- script. Remova o "-- " e execute somente ele.
+--
+-- INSERT INTO perfil (id_conta, nome, data_criacao)
+-- VALUES (11, 'Perfil Bloqueado', '2026-11-16');
+--
+-- Resultado esperado:
+-- Error Code: 1644. Conta cancelada: nao e possivel criar perfil.
+
+
+-- ==========================================================
+-- TRIGGER 3
+-- Regra:
+-- Quando o status de uma conta mudar, a cobrança acompanha:
+--   conta deixa de ser 'Ativa'  -> cobranca_ativa = 0
+--   conta volta a ser 'Ativa'   -> cobranca_ativa = 1
+--
+-- Tipo:
+-- AFTER UPDATE
+--
+-- Esta trigger altera OUTRA tabela (dados_cobranca).
+-- ==========================================================
+DROP TRIGGER IF EXISTS tg_status_conta_cobranca;
+
+DELIMITER //
+
+CREATE TRIGGER tg_status_conta_cobranca
+-- AFTER significa que a trigger será executada
+-- depois que o comando UPDATE terminar com sucesso
+AFTER UPDATE ON conta
+FOR EACH ROW
+BEGIN
+
+    -- OLD representa os valores antigos antes do UPDATE
+    -- NEW representa os valores novos depois do UPDATE
+    --
+    -- Só age se o status realmente mudou
+    IF OLD.status <> NEW.status THEN
+
+        IF NEW.status = 'Ativa' THEN
+            UPDATE dados_cobranca
+            SET cobranca_ativa = 1
+            WHERE id_conta = NEW.id_conta;
+        ELSE
+            UPDATE dados_cobranca
+            SET cobranca_ativa = 0
+            WHERE id_conta = NEW.id_conta;
+        END IF;
+
+    END IF;
+
+END //
+
+DELIMITER ;
+
+-- Comando que dispara a trigger:
+-- a conta 3 é suspensa
+UPDATE conta
+SET status = 'Suspensa'
+WHERE id_conta = 3;
+
+-- Conferindo o resultado:
+-- a cobrança da conta 3 deve aparecer com cobranca_ativa = 0
+SELECT C.id_conta, C.status, D.cobranca_ativa
+FROM conta C
+INNER JOIN dados_cobranca D ON D.id_conta = C.id_conta
+WHERE C.id_conta = 3;
+
+-- Reativando a conta 3: a cobrança volta para 1
+UPDATE conta
+SET status = 'Ativa'
+WHERE id_conta = 3;
+
+SELECT C.id_conta, C.status, D.cobranca_ativa
+FROM conta C
+INNER JOIN dados_cobranca D ON D.id_conta = C.id_conta
+WHERE C.id_conta = 3;
+
+
+-- ==========================================================
+-- PARTE 8 - USUÁRIOS E PERMISSÕES (GRANT E REVOKE)
+-- ----------------------------------------------------------
+-- Cada usuário tem uma função diferente:
+--
+-- admin_netflix:  acesso total ao banco
+-- analista:       apenas consulta dados (relatórios)
+-- atendente:      consulta contas e perfis e altera o status
+--                 da conta
+-- catalogo:       cadastra e consulta títulos
+-- financeiro:     consulta planos e algumas colunas da cobrança
+--
+-- Observação: senhas de exemplo, apenas para a atividade.
+-- ==========================================================
+
+-- Remove os usuários, se já existirem (permite executar o
+-- script mais de uma vez)
+DROP USER IF EXISTS 'admin_netflix'@'localhost';
+DROP USER IF EXISTS 'analista'@'localhost';
+DROP USER IF EXISTS 'atendente'@'localhost';
+DROP USER IF EXISTS 'catalogo'@'localhost';
+DROP USER IF EXISTS 'financeiro'@'localhost';
+
+CREATE USER 'admin_netflix'@'localhost'
+IDENTIFIED BY 'Netflix@123';
+
+CREATE USER 'analista'@'localhost'
+IDENTIFIED BY 'Netflix@123';
+
+CREATE USER 'atendente'@'localhost'
+IDENTIFIED BY 'Netflix@123';
+
+CREATE USER 'catalogo'@'localhost'
+IDENTIFIED BY 'Netflix@123';
+
+CREATE USER 'financeiro'@'localhost'
+IDENTIFIED BY 'Netflix@123';
+
+-- EXEMPLO 1 - Acesso total ao banco
+GRANT ALL PRIVILEGES
+ON netflix.*
+TO 'admin_netflix'@'localhost';
+
+-- EXEMPLO 2 - Somente consulta no banco inteiro
+-- O analista pode visualizar informações, mas não altera nada.
+GRANT SELECT
+ON netflix.*
+TO 'analista'@'localhost';
+
+-- EXEMPLO 3 - Consulta em tabelas específicas
+-- O atendente consulta contas e perfis.
+GRANT SELECT
+ON netflix.conta
+TO 'atendente'@'localhost';
+
+GRANT SELECT
+ON netflix.perfil
+TO 'atendente'@'localhost';
+
+-- EXEMPLO 4 - UPDATE limitado a uma coluna
+-- O atendente pode alterar apenas o status da conta
+-- (não altera e-mail, senha ou plano).
+GRANT UPDATE (status)
+ON netflix.conta
+TO 'atendente'@'localhost';
+
+-- EXEMPLO 5 - INSERT em uma tabela
+-- O setor de catálogo cadastra e consulta títulos.
+GRANT INSERT
+ON netflix.titulo
+TO 'catalogo'@'localhost';
+
+GRANT SELECT
+ON netflix.titulo
+TO 'catalogo'@'localhost';
+
+-- EXEMPLO 6 - Leitura apenas de algumas colunas
+-- O financeiro vê a forma de pagamento e o vencimento,
+-- mas não vê os dígitos do cartão.
+GRANT SELECT
+(
+id_cobranca,
+id_conta,
+forma_pagamento,
+dia_vencimento,
+data_proxima_cobranca,
+cobranca_ativa
+)
+ON netflix.dados_cobranca
+TO 'financeiro'@'localhost';
+
+GRANT SELECT
+ON netflix.plano
+TO 'financeiro'@'localhost';
+
+-- Conferir permissões dos usuários
+SHOW GRANTS FOR 'admin_netflix'@'localhost';
+SHOW GRANTS FOR 'analista'@'localhost';
+SHOW GRANTS FOR 'atendente'@'localhost';
+SHOW GRANTS FOR 'catalogo'@'localhost';
+SHOW GRANTS FOR 'financeiro'@'localhost';
+
+-- ----------------------------------------------------------
+-- REVOKE - Removendo permissões
+-- ----------------------------------------------------------
+
+-- EXEMPLO 7 - Remover uma permissão específica
+-- O catálogo não poderá mais inserir títulos,
+-- mas continua podendo consultar.
+REVOKE INSERT
+ON netflix.titulo
+FROM 'catalogo'@'localhost';
+
+-- EXEMPLO 8 - Remover acesso a uma coluna específica
+-- O atendente deixa de alterar o status da conta.
+REVOKE UPDATE (status)
+ON netflix.conta
+FROM 'atendente'@'localhost';
+
+-- Verificando novamente as permissões
+SHOW GRANTS FOR 'catalogo'@'localhost';
+SHOW GRANTS FOR 'atendente'@'localhost';
+
+
+-- ==========================================================
+-- PARTE 9 - TRANSAÇÕES (COMMIT, ROLLBACK E SAVEPOINT)
+-- ----------------------------------------------------------
+-- START TRANSACTION inicia uma transação
+-- COMMIT salva definitivamente
+-- ROLLBACK desfaz alterações ainda não confirmadas
+-- SAVEPOINT permite desfazer apenas uma parte
+-- ==========================================================
+
+-- ----------------------------------------------------------
+-- Exemplo 1 - COMMIT
+-- Cadastro de um novo título junto com a sua categoria.
+-- As duas operações devem acontecer juntas.
+-- ----------------------------------------------------------
+START TRANSACTION;
+
+INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo)
+VALUES (41, 'A Estreia da Semana', 'Filme adicionado dentro de uma transação.', 'Filme', 2026, '12', 102, 'Português', '2026-11-16');
+
+INSERT INTO titulo_categoria (id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao)
+VALUES (41, 8, 1, 1, '2026-11-16');
+
+-- Visualiza o título antes da confirmação
+SELECT id_titulo, nome, tipo FROM titulo WHERE id_titulo = 41;
+
+-- COMMIT confirma a operação
+COMMIT;
+
+-- ----------------------------------------------------------
+-- Exemplo 2 - ROLLBACK
+-- Um reajuste de preço aplicado errado (multiplicou por 10)
+-- é desfeito.
+-- ----------------------------------------------------------
+START TRANSACTION;
+
+UPDATE plano
+SET valor_mensal = valor_mensal * 10
+WHERE id_plano = 5;
+
+-- Conferindo antes de confirmar: o valor está errado (559.00)
+SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;
+
+-- ROLLBACK desfaz tudo desde o START TRANSACTION
+ROLLBACK;
+
+-- Conferência: o valor voltou para 55.90
+SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;
+
+-- ----------------------------------------------------------
+-- Exemplo 3 - ROLLBACK de uma exclusão
+-- A conta 2 é apagada por engano. Por causa do ON DELETE
+-- CASCADE, os perfis dela são apagados junto. O ROLLBACK
+-- recupera tudo.
+-- ----------------------------------------------------------
+START TRANSACTION;
+
+DELETE FROM conta
+WHERE id_conta = 2;
+
+-- A conta e os perfis sumiram (temporariamente)
+SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
+
+-- Usuário percebeu que apagou a conta errada
+ROLLBACK;
+
+-- A conta e os perfis voltam a existir
+SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
+
+-- ----------------------------------------------------------
+-- Exemplo 4 - SAVEPOINT
+-- Permite desfazer apenas uma parte da transação.
+-- ----------------------------------------------------------
+START TRANSACTION;
+
+-- Primeira alteração: reajuste de 10% no plano Premium
+UPDATE plano
+SET valor_mensal = valor_mensal * 1.10
+WHERE id_plano = 5;
+
+-- Criando um ponto de retorno
+SAVEPOINT ajuste_preco;
+
+-- Segunda alteração: mudança no número de telas
+UPDATE plano
+SET telas_simultaneas = 1
+WHERE id_plano = 5;
+
+-- A alteração de telas estava errada:
+-- volta apenas até o SAVEPOINT
+ROLLBACK TO ajuste_preco;
+
+-- O reajuste de preço continua mantido
+-- A alteração de telas foi desfeita
+COMMIT;
+
+-- Conferência: valor reajustado (61.49) e telas = 4
+SELECT id_plano, nome, valor_mensal, telas_simultaneas FROM plano WHERE id_plano = 5;
