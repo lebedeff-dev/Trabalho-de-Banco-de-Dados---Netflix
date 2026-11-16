@@ -20,6 +20,7 @@ Decisões tomadas:
 - Triggers usam só as 13 tabelas do modelo (sem tabela de log), para não fugir da modelagem.
 - O dono pediu triggers **simples**: as três seguem o molde `IF NEW.campo ... THEN SET NEW.campo = ...` (sem `DECLARE`, sem `SIGNAL`, sem alterar outra tabela).
 - Um `INSERT` por linha, para cada linha contar como um comando.
+- O script existe em duas formas com o **mesmo conteúdo**: `sql/netflix_bd.sql` (completo, para entregar) e `sql/partes/01` a `09` (dividido, para apresentar). **Qualquer alteração precisa ser feita nas duas.** Os arquivos de `partes` rodam em ordem; para repetir, recomeçar do 01.
 
 ## Entrega
 Um arquivo `.sql` com: estrutura, inserts (30+ por tabela), consultas, índice com justificativa, views, triggers, usuários/permissões e transações. Ver [[Rubrica AT1]].

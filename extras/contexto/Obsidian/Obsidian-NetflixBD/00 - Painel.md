@@ -10,6 +10,7 @@
 | Tema | Netflix (modelo do 1º trabalho, 13 tabelas) |
 | Modo | Individual (o AVA mostra "Group 1", a nota vale para o grupo) |
 | Entrega | `sql/netflix_bd.sql` (um arquivo, na ordem dos critérios) |
+| Para apresentar | `sql/partes/` (o mesmo script em 9 arquivos, 01 a 09) |
 
 ## Mapa
 - [[HANDOFF_CONTEXTO]] — regras e estado do trabalho
@@ -22,13 +23,13 @@
 - [[Passo a passo]] — checklist de execução
 
 ## Explicações para apresentar (uma por critério)
-| Critério da rubrica | Parte do script | Nota |
+| Critério da rubrica | Arquivo em `sql/partes` | Nota |
 |---|---|---|
-| Estrutura do banco | Parte 1 | [[Parte 1 - Estrutura (explicacao)]] |
-| Inserção de dados | Parte 2 | [[Parte 2 - Inserts (explicacao)]] |
-| Consultas SQL | Parte 3 | [[Parte 3 - Consultas (explicacao)]] |
-| Scripts adicionais e índices | Partes 4 e 5 | [[Partes 4 e 5 - Indices e procedures (explicacao)]] |
-| Recursos adicionais | Partes 6 a 9 | [[Partes 6 a 9 - Views, triggers, usuarios e transacoes (explicacao)]] |
+| Estrutura do banco | `01_estrutura.sql` | [[Parte 1 - Estrutura (explicacao)]] |
+| Inserção de dados | `02_inserts.sql` | [[Parte 2 - Inserts (explicacao)]] |
+| Consultas SQL | `03_consultas.sql` | [[Parte 3 - Consultas (explicacao)]] |
+| Scripts adicionais e índices | `04_indices.sql`, `05_procedures.sql` | [[Partes 4 e 5 - Indices e procedures (explicacao)]] |
+| Recursos adicionais | `06_views.sql`, `07_triggers.sql`, `08_usuarios_permissoes.sql`, `09_transacoes.sql` | [[Partes 6 a 9 - Views, triggers, usuarios e transacoes (explicacao)]] |
 
 ## Estado
 - [x] Pasta organizada na estrutura do repositório de exemplo

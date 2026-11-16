@@ -28,15 +28,15 @@ A rubrica completa está em [`extras/contexto/Proposta`](extras/contexto/Propost
 
 ## 2. O que foi entregue
 
-Tudo está em um único arquivo, [`sql/netflix_bd.sql`](sql/netflix_bd.sql), organizado na ordem dos critérios.
+O script completo está em [`sql/netflix_bd.sql`](sql/netflix_bd.sql), organizado na ordem dos critérios. O mesmo conteúdo também está dividido em 9 arquivos menores, um por parte, em [`sql/partes`](sql/partes/), para facilitar a leitura e a apresentação.
 
-| Critério | Parte do script | Conteúdo |
-|---|---|---|
-| Estrutura do banco | Parte 1 | Banco `NETFLIX` e 13 tabelas, com 13 chaves primárias, 12 chaves estrangeiras e 12 restrições `UNIQUE` |
-| Inserção de dados | Parte 2 | 712 comandos `INSERT` (a menor tabela tem 30 linhas) |
-| Consultas SQL | Parte 3 | 12 consultas: `INNER`, `LEFT`, `RIGHT` e `SELF JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY` e `LIMIT` |
-| Scripts adicionais e índices | Partes 4 e 5 | 2 índices com justificativa e 3 stored procedures |
-| Recursos adicionais | Partes 6 a 9 | 3 views, 3 triggers, 5 usuários com `GRANT`/`REVOKE` e 4 exemplos de transação (`COMMIT`, `ROLLBACK`, `SAVEPOINT`) |
+| Critério | Parte | Arquivo em `sql/partes` | Conteúdo |
+|---|---|---|---|
+| Estrutura do banco | 1 | `01_estrutura.sql` | Banco `NETFLIX` e 13 tabelas, com 13 chaves primárias, 12 chaves estrangeiras e 12 restrições `UNIQUE` |
+| Inserção de dados | 2 | `02_inserts.sql` | 712 comandos `INSERT` (a menor tabela tem 30 linhas) |
+| Consultas SQL | 3 | `03_consultas.sql` | 12 consultas: `INNER`, `LEFT`, `RIGHT` e `SELF JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY` e `LIMIT` |
+| Scripts adicionais e índices | 4 e 5 | `04_indices.sql` e `05_procedures.sql` | 2 índices com justificativa e 3 stored procedures |
+| Recursos adicionais | 6 a 9 | `06_views.sql`, `07_triggers.sql`, `08_usuarios_permissoes.sql` e `09_transacoes.sql` | 3 views, 3 triggers, 5 usuários com `GRANT`/`REVOKE` e 4 exemplos de transação (`COMMIT`, `ROLLBACK`, `SAVEPOINT`) |
 
 O script foi testado em MySQL 8.0 e pode ser executado mais de uma vez, pois recria o banco do zero.
 
@@ -60,12 +60,16 @@ O modelo está em [`Banco de dados/netflix.mwb`](Banco%20de%20dados/netflix.mwb)
 
 O script apaga e recria o banco `NETFLIX` a cada execução.
 
+**Por partes:** também é possível executar os arquivos de [`sql/partes`](sql/partes/) um de cada vez, **na ordem de 01 a 09**. Cada arquivo depende dos anteriores. Para repetir, comece de novo pelo `01_estrutura.sql`, que recria o banco. O resultado é o mesmo do script completo.
+
 ## 5. Estrutura do repositório
 
 ```
 README.md
 Banco de dados/          Modelo lógico (.mwb, para o MySQL Workbench)
-sql/netflix_bd.sql       Script completo do banco (partes 1 a 9)
+sql/
+  netflix_bd.sql         Script completo do banco (partes 1 a 9)
+  partes/                O mesmo script dividido em 9 arquivos (01 a 09)
 extras/
   contexto/
     Proposta/            Rubrica da atividade (PDF)
