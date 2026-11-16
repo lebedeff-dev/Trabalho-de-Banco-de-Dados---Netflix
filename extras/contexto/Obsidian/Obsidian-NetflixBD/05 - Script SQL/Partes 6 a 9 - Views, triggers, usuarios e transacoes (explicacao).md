@@ -21,20 +21,36 @@ Uso: `SELECT * FROM vw_contas_ativas;` (como se fosse uma tabela).
 **O que é:** uma ação que o banco executa sozinho quando acontece um `INSERT`, `UPDATE` ou `DELETE`.
 **Fonte:** `bd_supermercado-trigger - Copy.sql` e PDF *11 - Triggers*. Segui a estrutura dela: regra, criação, comando de teste, SELECT de conferência.
 
-| Trigger | Tipo | Regra | Modelo da professora | Resultado do teste |
-|---|---|---|---|---|
-| `tg_validar_minuto_parada` | BEFORE INSERT em historico_visualizacao | Minuto negativo vira 0 | `tg_validar_estoque` | Inseri -10, gravou **0** |
-| `tg_validar_perfil` | BEFORE INSERT em perfil | Não cria perfil em conta cancelada (`SIGNAL`) | `tg_validar_item_pedido` | Conta 1 (ativa): criou. Conta 11 (cancelada): **erro 1644** |
-| `tg_status_conta_cobranca` | AFTER UPDATE em conta | Status da conta muda → `cobranca_ativa` acompanha | `tg_historico_salario` + trigger que altera outra tabela | Suspendi a conta 3: cobrança foi a **0**. Reativei: voltou a **1** |
+As três usam **o mesmo molde simples**, o das triggers `tg_validar_estoque` e `tg_validar_pedido` da professora:
 
-- **BEFORE**: roda antes de gravar; pode **corrigir** o dado (`SET NEW.campo = ...`) ou **recusar** (`SIGNAL`).
-- **AFTER**: roda depois de gravar; usada para refletir a mudança em outra tabela.
-- **NEW / OLD**: `NEW` é o valor novo, `OLD` o valor antes do `UPDATE`.
-- **`FOR EACH ROW`**: executa uma vez para cada linha afetada.
-- **`SIGNAL SQLSTATE '45000'`**: gera um erro definido pelo programador e cancela a operação.
-- O caso que dá erro está **comentado** no script, como a professora faz, para não interromper a execução.
+```sql
+IF NEW.campo <condição> THEN
+    SET NEW.campo = <valor corrigido>;
+END IF;
+```
+
+| Trigger | Tipo | Regra | Resultado do teste |
+|---|---|---|---|
+| `tg_validar_minuto_parada` | BEFORE INSERT em historico_visualizacao | Minuto negativo vira 0 | Inseri -10, gravou **0** |
+| `tg_validar_dia_vencimento` | BEFORE INSERT em dados_cobranca | Dia de vencimento maior que 28 vira 28 | Inseri 31, gravou **28** |
+| `tg_validar_valor_plano` | BEFORE UPDATE em plano | Valor negativo é ignorado: o plano fica com o valor antigo | Tentei -5,00, continuou **19,90** |
+
+Como ler uma trigger, linha por linha (usando a primeira):
+
+1. `CREATE TRIGGER tg_validar_minuto_parada` → dá o nome.
+2. `BEFORE INSERT ON historico_visualizacao` → **quando** roda: antes de cada inserção nessa tabela.
+3. `FOR EACH ROW` → roda uma vez para cada linha inserida.
+4. `IF NEW.minuto_parada < 0 THEN` → olha o valor que está chegando.
+5. `SET NEW.minuto_parada = 0;` → corrige o valor antes de gravar.
+
+- **BEFORE**: roda antes de gravar, por isso consegue **corrigir** o dado.
+- **NEW**: o valor que está chegando. **OLD**: o valor que já estava gravado (só existe no `UPDATE`). A trigger 3 usa os dois: `SET NEW.valor_mensal = OLD.valor_mensal`.
+- **`DELIMITER //`**: a trigger tem `;` por dentro; trocar o delimitador evita que o MySQL encerre o comando no meio.
+- **Por que dia 28?** Para o vencimento existir em todos os meses (fevereiro tem 28 dias).
 
 **Sem tabela nova:** a professora cria uma `LOG_SISTEMA` para um dos exemplos. Preferi triggers que usam só as 13 tabelas do modelo aprovado, para não fugir da modelagem (e porque a rubrica pede 30 inserts em **todas** as tabelas).
+
+**Versão anterior:** as triggers 2 e 3 eram mais complexas (variável com `DECLARE`, erro com `SIGNAL`, alteração em outra tabela). Foram trocadas por estas, mais fáceis de explicar.
 
 ## Parte 8 - Usuários e permissões
 
@@ -75,9 +91,9 @@ Depois, dois `REVOKE`: o catálogo perde o `INSERT` e o atendente perde o `UPDAT
 
 1. **View guarda dados?** Não. Guarda a consulta; os dados vêm das tabelas na hora.
 2. **Para que serve uma view?** Simplificar consultas repetidas e esconder colunas (ex.: a senha).
-3. **Diferença entre BEFORE e AFTER?** BEFORE roda antes de gravar e pode corrigir ou barrar; AFTER roda depois.
-4. **O que são NEW e OLD?** Os valores novos e os antigos da linha que disparou a trigger.
-5. **O que o SIGNAL faz?** Gera um erro e cancela o comando.
+3. **Diferença entre BEFORE e AFTER?** BEFORE roda antes de gravar e pode corrigir o dado; AFTER roda depois de gravar. As três triggers do trabalho são BEFORE.
+4. **O que são NEW e OLD?** NEW é o valor que está chegando; OLD é o valor que já estava gravado.
+5. **Por que a trigger é BEFORE e não AFTER?** Porque ela corrige o valor, e isso só dá para fazer antes de gravar.
 6. **Diferença entre GRANT e REVOKE?** GRANT dá permissão; REVOKE tira.
 7. **Dá para limitar permissão a uma coluna?** Sim: `GRANT UPDATE (status)` e `GRANT SELECT (colunas)`.
 8. **Diferença entre COMMIT e ROLLBACK?** COMMIT confirma; ROLLBACK desfaz o que ainda não foi confirmado.

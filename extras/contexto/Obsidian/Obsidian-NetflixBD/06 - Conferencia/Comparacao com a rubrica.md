@@ -10,7 +10,7 @@ Conferência feita em 16/11/2026, rodando `sql/netflix_bd.sql` completo num MySQ
 | **Inserção de dados** | No mínimo 30 INSERT em **todas** as tabelas | 712 INSERT; a menor tabela tem 30 | plano 30, categoria 30, temporada 32, dados_cobranca 35, pessoa/titulo/conta 40, configuracao_perfil 50, perfil/episodio 60, historico 80, titulo_categoria 87, participacao 128 | Atende |
 | **Consultas SQL** | Consultas corretas, com JOINs, filtros, agrupamentos e ordenação | 12 consultas, todas devolvem linhas | INNER, LEFT, RIGHT e SELF JOIN; WHERE (AND/OR/LIKE/IS NULL); GROUP BY; HAVING; ORDER BY; LIMIT | Atende |
 | **Scripts adicionais e índices** | Índice + scripts adicionais, **com justificativa do campo indexado** | 2 índices com justificativa escrita + 3 stored procedures | `idx_titulo_nome`, `idx_historico_data_inicio` (usados pelo MySQL, conferido com EXPLAIN); 3 procedures com `CALL` | Atende (ver ressalva 1) |
-| **Recursos adicionais** | Views, triggers, usuários, permissões e transações | 3 views, 3 triggers, 5 usuários, 11 GRANT/REVOKE, 4 transações | Triggers testadas (incluindo o caso de erro); permissões testadas entrando com cada usuário; ROLLBACK e SAVEPOINT conferidos | Atende |
+| **Recursos adicionais** | Views, triggers, usuários, permissões e transações | 3 views, 3 triggers, 5 usuários, 11 GRANT/REVOKE, 4 transações | Triggers testadas (-10 virou 0; dia 31 virou 28; valor negativo ignorado); permissões testadas entrando com cada usuário; ROLLBACK e SAVEPOINT conferidos | Atende |
 
 ## Regras do trabalho
 

@@ -18,6 +18,7 @@ O script `sql/netflix_bd.sql` está completo (partes 1 a 9) e testado em MySQL 8
 Decisões tomadas:
 - "Scripts adicionais" da rubrica = stored procedures (a rubrica não especifica; é o que os materiais dela têm).
 - Triggers usam só as 13 tabelas do modelo (sem tabela de log), para não fugir da modelagem.
+- O dono pediu triggers **simples**: as três seguem o molde `IF NEW.campo ... THEN SET NEW.campo = ...` (sem `DECLARE`, sem `SIGNAL`, sem alterar outra tabela).
 - Um `INSERT` por linha, para cada linha contar como um comando.
 
 ## Entrega

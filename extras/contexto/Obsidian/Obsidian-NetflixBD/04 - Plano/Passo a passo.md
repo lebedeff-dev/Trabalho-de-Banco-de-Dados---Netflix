@@ -8,7 +8,7 @@ Um arquivo só, na ordem dos critérios da rubrica. Estilo em [[Padroes dos scri
 - [x] **Parte 4 - Índices**: 2, com justificativa → [[Partes 4 e 5 - Indices e procedures (explicacao)]]
 - [x] **Parte 5 - Stored procedures**: 3 (scripts adicionais)
 - [x] **Parte 6 - Views**: 3 → [[Partes 6 a 9 - Views, triggers, usuarios e transacoes (explicacao)]]
-- [x] **Parte 7 - Triggers**: 3 (BEFORE INSERT, BEFORE INSERT com SIGNAL, AFTER UPDATE)
+- [x] **Parte 7 - Triggers**: 3 simples, no molde `IF ... SET NEW` (2 BEFORE INSERT e 1 BEFORE UPDATE)
 - [x] **Parte 8 - Usuários**: 5 usuários, GRANT e REVOKE
 - [x] **Parte 9 - Transações**: COMMIT, ROLLBACK, SAVEPOINT
 - [x] README e commits no GitHub

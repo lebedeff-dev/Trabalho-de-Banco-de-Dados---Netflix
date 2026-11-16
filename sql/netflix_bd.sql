@@ -1491,6 +1491,7 @@ CREATE TRIGGER tg_validar_minuto_parada
 -- BEFORE executa antes da gravação no banco,
 -- permitindo alterar ou validar valores
 BEFORE INSERT ON historico_visualizacao
+-- Executa para cada registro inserido
 FOR EACH ROW
 BEGIN
 
@@ -1519,107 +1520,25 @@ WHERE id_perfil = 1 AND id_titulo = 1;
 -- ==========================================================
 -- TRIGGER 2
 -- Regra:
--- Não permitir criar perfil em uma conta CANCELADA.
+-- O dia de vencimento da cobrança vai até o dia 28 (para
+-- existir em todos os meses). Se vier um dia maior, ele é
+-- trocado por 28.
 --
 -- Tipo:
 -- BEFORE INSERT
---
--- Aqui a trigger RECUSA a operação: o SIGNAL gera um erro,
--- o INSERT é cancelado e nada é gravado.
--- SQLSTATE '45000' é o código usado para erros definidos
--- pelo próprio programador.
 -- ==========================================================
-DROP TRIGGER IF EXISTS tg_validar_perfil;
+DROP TRIGGER IF EXISTS tg_validar_dia_vencimento;
 
 DELIMITER //
 
-CREATE TRIGGER tg_validar_perfil
-BEFORE INSERT ON perfil
+CREATE TRIGGER tg_validar_dia_vencimento
+BEFORE INSERT ON dados_cobranca
 FOR EACH ROW
 BEGIN
 
-    -- DECLARE cria uma variável local dentro da trigger
-    DECLARE v_status VARCHAR(10);
-
-    -- Busca o status da conta do novo perfil
-    -- e guarda na variável v_status
-    SELECT status INTO v_status
-    FROM conta
-    WHERE id_conta = NEW.id_conta;
-
-    -- Se a conta estiver cancelada, a operação é bloqueada
-    IF v_status = 'Cancelada' THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Conta cancelada: nao e possivel criar perfil.';
-    END IF;
-
-END //
-
-DELIMITER ;
-
--- Comando que dispara a trigger (caso válido):
--- a conta 1 está ativa, então o perfil é criado
-INSERT INTO perfil (id_conta, nome, data_criacao)
-VALUES (1, 'Teste Trigger', '2026-11-16');
-
--- Conferindo o resultado
-SELECT id_perfil, id_conta, nome, data_criacao
-FROM perfil
-WHERE id_conta = 1;
-
--- Comando que dispara a trigger (caso bloqueado):
--- a conta 11 está cancelada.
---
--- ATENÇÃO: este comando VAI GERAR ERRO de propósito.
--- Ele está comentado para não interromper a execução do
--- script. Remova o "-- " e execute somente ele.
---
--- INSERT INTO perfil (id_conta, nome, data_criacao)
--- VALUES (11, 'Perfil Bloqueado', '2026-11-16');
---
--- Resultado esperado:
--- Error Code: 1644. Conta cancelada: nao e possivel criar perfil.
-
-
--- ==========================================================
--- TRIGGER 3
--- Regra:
--- Quando o status de uma conta mudar, a cobrança acompanha:
---   conta deixa de ser 'Ativa'  -> cobranca_ativa = 0
---   conta volta a ser 'Ativa'   -> cobranca_ativa = 1
---
--- Tipo:
--- AFTER UPDATE
---
--- Esta trigger altera OUTRA tabela (dados_cobranca).
--- ==========================================================
-DROP TRIGGER IF EXISTS tg_status_conta_cobranca;
-
-DELIMITER //
-
-CREATE TRIGGER tg_status_conta_cobranca
--- AFTER significa que a trigger será executada
--- depois que o comando UPDATE terminar com sucesso
-AFTER UPDATE ON conta
-FOR EACH ROW
-BEGIN
-
-    -- OLD representa os valores antigos antes do UPDATE
-    -- NEW representa os valores novos depois do UPDATE
-    --
-    -- Só age se o status realmente mudou
-    IF OLD.status <> NEW.status THEN
-
-        IF NEW.status = 'Ativa' THEN
-            UPDATE dados_cobranca
-            SET cobranca_ativa = 1
-            WHERE id_conta = NEW.id_conta;
-        ELSE
-            UPDATE dados_cobranca
-            SET cobranca_ativa = 0
-            WHERE id_conta = NEW.id_conta;
-        END IF;
-
+    IF NEW.dia_vencimento > 28 THEN
+        -- Modifica o valor antes de salvar
+        SET NEW.dia_vencimento = 28;
     END IF;
 
 END //
@@ -1627,27 +1546,60 @@ END //
 DELIMITER ;
 
 -- Comando que dispara a trigger:
--- a conta 3 é suspensa
-UPDATE conta
-SET status = 'Suspensa'
-WHERE id_conta = 3;
+-- a conta 5 ainda não tinha cobrança; tentamos o dia 31
+INSERT INTO dados_cobranca (id_conta, nome_titular, forma_pagamento, dia_vencimento, data_proxima_cobranca)
+VALUES (5, 'Titular de Teste', 'Pix', 31, '2026-12-28');
 
 -- Conferindo o resultado:
--- a cobrança da conta 3 deve aparecer com cobranca_ativa = 0
-SELECT C.id_conta, C.status, D.cobranca_ativa
-FROM conta C
-INNER JOIN dados_cobranca D ON D.id_conta = C.id_conta
-WHERE C.id_conta = 3;
+-- o dia_vencimento deve aparecer como 28, e não 31
+SELECT id_cobranca, id_conta, nome_titular, dia_vencimento
+FROM dados_cobranca
+WHERE id_conta = 5;
 
--- Reativando a conta 3: a cobrança volta para 1
-UPDATE conta
-SET status = 'Ativa'
-WHERE id_conta = 3;
 
-SELECT C.id_conta, C.status, D.cobranca_ativa
-FROM conta C
-INNER JOIN dados_cobranca D ON D.id_conta = C.id_conta
-WHERE C.id_conta = 3;
+-- ==========================================================
+-- TRIGGER 3
+-- Regra:
+-- O valor mensal de um plano não pode ficar negativo.
+-- Se vier um valor negativo, o plano continua com o valor
+-- que já tinha.
+--
+-- Tipo:
+-- BEFORE UPDATE
+--
+-- No UPDATE existem OLD e NEW ao mesmo tempo:
+-- OLD é o valor antigo e NEW é o valor novo.
+-- ==========================================================
+DROP TRIGGER IF EXISTS tg_validar_valor_plano;
+
+DELIMITER //
+
+CREATE TRIGGER tg_validar_valor_plano
+BEFORE UPDATE ON plano
+-- Executa para cada plano alterado
+FOR EACH ROW
+BEGIN
+
+    IF NEW.valor_mensal < 0 THEN
+        -- Mantém o valor antigo
+        SET NEW.valor_mensal = OLD.valor_mensal;
+    END IF;
+
+END //
+
+DELIMITER ;
+
+-- Comando que dispara a trigger:
+-- tentativa de colocar valor negativo no plano 1
+UPDATE plano
+SET valor_mensal = -5.00
+WHERE id_plano = 1;
+
+-- Conferindo o resultado:
+-- o valor_mensal deve continuar 19.90
+SELECT id_plano, nome, valor_mensal
+FROM plano
+WHERE id_plano = 1;
 
 
 -- ==========================================================
