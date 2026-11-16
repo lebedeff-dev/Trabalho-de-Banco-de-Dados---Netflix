@@ -22,8 +22,8 @@
 ## Estado
 - [x] Pasta organizada na estrutura do repositório de exemplo
 - [x] Vault criado
-- [ ] Repositório Git ligado e 1º commit
-- [ ] `sql/netflix_bd.sql` (criação das tabelas)
+- [x] Repositório Git ligado e 1º commit (push feito)
+- [x] `sql/netflix_bd.sql` — Parte 1: estrutura (testada em MySQL 8). Explicação: [[Parte 1 - Estrutura (explicacao)]]
 - [ ] Inserts (30+ por tabela)
 - [ ] Consultas
 - [ ] Índice + justificativa
