@@ -1,6 +1,6 @@
 # Rubrica AT1 - Implementação
 
-Fonte: `extras/contexto/Proposta/AT1 - Projeto - Implementacao (rubrica).pdf`. A página no AVA só repete a rubrica; **não há enunciado com tema ou lista de consultas**.
+Fonte: `Contexto/Proposta/AT1 - Projeto - Implementacao (rubrica).pdf`. A página no AVA só repete a rubrica; **não há enunciado com tema ou lista de consultas**.
 
 | Critério | Nota máxima (3 pts) pede... |
 |---|---|

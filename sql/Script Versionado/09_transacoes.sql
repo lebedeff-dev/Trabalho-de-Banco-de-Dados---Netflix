@@ -27,13 +27,13 @@ USE NETFLIX;
 START TRANSACTION;
 
 INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo)
-VALUES (41, 'A Estreia da Semana', 'Filme adicionado dentro de uma transação.', 'Filme', 2026, '12', 102, 'Português', '2026-11-16');
+VALUES (31, 'A Estreia da Semana', 'Filme adicionado dentro de uma transação.', 'Filme', 2026, '12', 102, 'Português', '2026-11-16');
 
 INSERT INTO titulo_categoria (id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao)
-VALUES (41, 8, 1, 1, '2026-11-16');
+VALUES (31, 8, 1, 1, '2026-11-16');
 
 -- Visualiza o título antes da confirmação
-SELECT id_titulo, nome, tipo FROM titulo WHERE id_titulo = 41;
+SELECT id_titulo, nome, tipo FROM titulo WHERE id_titulo = 31;
 
 -- COMMIT confirma a operação
 COMMIT;

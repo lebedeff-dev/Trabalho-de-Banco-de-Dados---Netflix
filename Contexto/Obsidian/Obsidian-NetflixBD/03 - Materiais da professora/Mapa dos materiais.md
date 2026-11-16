@@ -1,6 +1,6 @@
 # Mapa dos materiais da professora
 
-Local: `extras/contexto/Materiais/`. O exemplo dela é um **banco de supermercado em MySQL**.
+Local: `Contexto/Materiais/`. O exemplo dela é um **banco de supermercado em MySQL**.
 
 ## Scripts SQL (`Scripts SQL/`)
 | Arquivo | O que mostra | Serve para |

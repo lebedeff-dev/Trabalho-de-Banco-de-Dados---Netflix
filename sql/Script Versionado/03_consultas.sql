@@ -157,14 +157,14 @@ ORDER BY A.ano_lancamento, A.nome;
 
 -- ----------------------------------------------------------
 -- CONSULTA 09 - GROUP BY com HAVING
--- Categorias que têm 5 ou mais títulos, da maior para a menor.
+-- Categorias que têm 4 ou mais títulos, da maior para a menor.
 -- Tabelas: categoria, titulo_categoria
 -- ----------------------------------------------------------
 SELECT CA.nome AS categoria, COUNT(*) AS qtd_titulos
 FROM categoria CA
 INNER JOIN titulo_categoria TC ON TC.id_categoria = CA.id_categoria
 GROUP BY CA.id_categoria, CA.nome
-HAVING COUNT(*) >= 5
+HAVING COUNT(*) >= 4
 ORDER BY qtd_titulos DESC, CA.nome;
 -- Comentário: WHERE filtra linhas antes de agrupar;
 -- HAVING filtra os grupos depois do agrupamento.

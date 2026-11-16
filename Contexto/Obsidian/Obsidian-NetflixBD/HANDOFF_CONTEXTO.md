@@ -3,12 +3,12 @@
 Leia isto primeiro se você é uma IA ou pessoa retomando o trabalho.
 
 ## Regras definidas pelo dono do trabalho
-1. **Só usar o que a professora já mostrou** nos materiais (`extras/contexto/Materiais/`). Nada de recursos que não aparecem lá.
+1. **Só usar o que a professora já mostrou** nos materiais (`Contexto/Materiais/`). Nada de recursos que não aparecem lá.
 2. **Trabalho individual**, e o dono quer **escrever junto** (aprender). Explicar cada passo, propor, deixar ele tentar e corrigir.
 3. **Fazer parte a parte**, explicando o que foi feito.
 4. **Commits** vão para https://github.com/lebedeff-dev/Trabalho-de-Banco-de-Dados---Netflix (estava vazio).
 5. **Nenhuma ferramenta de IA entra como contribuidor**, nem via commit: sem linhas `Co-Authored-By` e sem menção em mensagens de commit. Os commits são só do autor.
-6. Organização das pastas segue o repositório de exemplo https://github.com/lebedeff-dev/Projeto_Final_POO_Netflix (`extras/contexto/...`, README, .gitignore).
+6. Organização das pastas inspirada no repositório de exemplo https://github.com/lebedeff-dev/Projeto_Final_POO_Netflix, com o contexto em `Contexto/` na raiz (README, .gitignore).
 7. O modelo Netflix **não será alterado**: a professora o aprovou com 12/12 (ver [[Feedback da professora (modelo logico)]]). A implementação segue o modelo à risca ([[Modelo logico Netflix]]).
 8. Qualquer coisa que **não esteja nos materiais da professora é removida/evitada**. Só entra o que está nos scripts ou nos PDFs dela.
 
@@ -20,7 +20,9 @@ Decisões tomadas:
 - Triggers usam só as 13 tabelas do modelo (sem tabela de log), para não fugir da modelagem.
 - O dono pediu triggers **simples**: as três seguem o molde `IF NEW.campo ... THEN SET NEW.campo = ...` (sem `DECLARE`, sem `SIGNAL`, sem alterar outra tabela).
 - Um `INSERT` por linha, para cada linha contar como um comando.
-- O script existe em duas formas com o **mesmo conteúdo**: `sql/netflix_bd.sql` (completo, para entregar) e `sql/partes/01` a `09` (dividido, para apresentar). **Qualquer alteração precisa ser feita nas duas.** Os arquivos de `partes` rodam em ordem; para repetir, recomeçar do 01.
+- Inserts no **mínimo**: 30 por tabela (392 no total; `conta` tem 32 para existirem contas sem cobrança). O dono pediu a redução para o script ficar menor.
+- O dono reorganizou as pastas: o contexto fica em `Contexto/` (raiz) e o script dividido em `sql/Script Versionado/`.
+- O script existe em duas formas com o **mesmo conteúdo**: `sql/netflix_bd.sql` (completo, para entregar) e `sql/Script Versionado/01` a `09` (dividido, para apresentar). **Qualquer alteração precisa ser feita nas duas.** Os arquivos de `partes` rodam em ordem; para repetir, recomeçar do 01.
 
 ## Entrega
 Um arquivo `.sql` com: estrutura, inserts (30+ por tabela), consultas, índice com justificativa, views, triggers, usuários/permissões e transações. Ver [[Rubrica AT1]].

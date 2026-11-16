@@ -78,9 +78,9 @@ Depois, dois `REVOKE`: o catálogo perde o `INSERT` e o atendente perde o `UPDAT
 
 | Exemplo | O que mostra | Resultado do teste |
 |---|---|---|
-| 1 - COMMIT | Cadastra um título e a categoria dele juntos | Título 41 gravado |
+| 1 - COMMIT | Cadastra um título e a categoria dele juntos | Título 31 gravado |
 | 2 - ROLLBACK | Reajuste errado (x10) desfeito | Valor foi a 559,00 e **voltou a 55,90** |
-| 3 - ROLLBACK de exclusão | Conta 2 apagada por engano; o CASCADE levou os perfis | Perfis: 4 → **0** → **4** de volta |
+| 3 - ROLLBACK de exclusão | Conta 2 apagada por engano; o CASCADE levou os perfis | Perfis: 3 → **0** → **3** de volta |
 | 4 - SAVEPOINT | Desfaz só a segunda alteração | Preço reajustado (61,49) mantido; telas continuaram 4 |
 
 - **`START TRANSACTION`** abre a transação; **`COMMIT`** grava de vez; **`ROLLBACK`** desfaz tudo desde o início; **`SAVEPOINT`** + **`ROLLBACK TO`** desfaz só até o ponto marcado.

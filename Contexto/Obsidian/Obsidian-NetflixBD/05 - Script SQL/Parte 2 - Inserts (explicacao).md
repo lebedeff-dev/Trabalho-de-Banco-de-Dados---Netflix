@@ -5,17 +5,23 @@ Testado em MySQL 8: o arquivo inteiro roda sem erro, inclusive duas vezes seguid
 
 ## Resultado (conferido no banco)
 
+Os dados estão no **mínimo exigido**: 30 comandos INSERT em cada tabela. Só `conta` tem 32.
+
 | Tabela | INSERTs | | Tabela | INSERTs |
 |---|---|---|---|---|
-| plano | 30 | | temporada | 32 |
-| categoria | 30 | | episodio | 60 |
-| pessoa | 40 | | titulo_categoria | 87 |
-| titulo | 40 | | participacao | 128 |
-| conta | 40 | | historico_visualizacao | 80 |
-| dados_cobranca | 35 | | perfil | 60 |
-| configuracao_perfil | 50 | | **Total** | **712** |
+| plano | 30 | | temporada | 30 |
+| categoria | 30 | | episodio | 30 |
+| pessoa | 30 | | titulo_categoria | 30 |
+| titulo | 30 | | participacao | 30 |
+| conta | **32** | | historico_visualizacao | 30 |
+| dados_cobranca | 30 | | perfil | 30 |
+| configuracao_perfil | 30 | | **Total** | **392** |
 
-Todas passam de 30. Para conferir você mesmo: `SELECT COUNT(*) FROM plano;` (e as demais).
+**Por que `conta` tem 32 e não 30?** `dados_cobranca` é 1:1 com `conta`. Com 30 contas e 30 cobranças, toda conta teria cobrança e não sobraria nenhum caso "sem correspondência" (nem conta livre para o teste da trigger 2). Com 32 contas, as contas 5 e 32 ficam sem cobrança.
+
+Para conferir você mesmo: `SELECT COUNT(*) FROM plano;` (e as demais).
+
+**Histórico:** a primeira versão tinha 712 inserts. Foi reduzida ao mínimo a pedido, para o script ficar menor.
 
 ## O comando INSERT
 
@@ -41,7 +47,7 @@ VALUES (1, 'Mobile', 'Assista no celular e no tablet. Plano regular.', 19.90, 'S
 
 | Regra | Efeito nos inserts |
 |---|---|
-| `UNIQUE (id_perfil, id_titulo)` no histórico | 80 pares perfil/título todos diferentes |
+| `UNIQUE (id_perfil, id_titulo)` no histórico | 30 pares perfil/título todos diferentes |
 | `UNIQUE (id_conta, nome)` no perfil | nenhum perfil repete o nome dentro da mesma conta |
 | `UNIQUE (id_pessoa, id_titulo, funcao)` | uma pessoa pode ser Ator e Diretor do mesmo título, mas não duas vezes na mesma função |
 | `UNIQUE` em `id_conta` (1:1 cobrança) | no máximo uma cobrança por conta |

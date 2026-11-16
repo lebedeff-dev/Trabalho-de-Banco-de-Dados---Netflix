@@ -10,7 +10,7 @@
 | Tema | Netflix (modelo do 1º trabalho, 13 tabelas) |
 | Modo | Individual (o AVA mostra "Group 1", a nota vale para o grupo) |
 | Entrega | `sql/netflix_bd.sql` (um arquivo, na ordem dos critérios) |
-| Para apresentar | `sql/partes/` (o mesmo script em 9 arquivos, 01 a 09) |
+| Para apresentar | `sql/Script Versionado/` (o mesmo script em 9 arquivos, 01 a 09) |
 
 ## Mapa
 - [[HANDOFF_CONTEXTO]] — regras e estado do trabalho
@@ -23,7 +23,7 @@
 - [[Passo a passo]] — checklist de execução
 
 ## Explicações para apresentar (uma por critério)
-| Critério da rubrica | Arquivo em `sql/partes` | Nota |
+| Critério da rubrica | Arquivo em `sql/Script Versionado` | Nota |
 |---|---|---|
 | Estrutura do banco | `01_estrutura.sql` | [[Parte 1 - Estrutura (explicacao)]] |
 | Inserção de dados | `02_inserts.sql` | [[Parte 2 - Inserts (explicacao)]] |
@@ -36,7 +36,7 @@
 - [x] Vault criado
 - [x] Repositório Git ligado e commits enviados
 - [x] Parte 1: estrutura (13 tabelas, 12 FKs)
-- [x] Parte 2: inserts (712 comandos, 30+ por tabela)
+- [x] Parte 2: inserts (392 comandos, o mínimo: 30 por tabela; conta tem 32)
 - [x] Parte 3: 12 consultas
 - [x] Partes 4 e 5: 2 índices com justificativa e 3 procedures
 - [x] Partes 6 a 9: 3 views, 3 triggers, 5 usuários com GRANT/REVOKE, 4 transações

@@ -16,7 +16,7 @@ Atividade AT1 - Projeto - Implementação · Laboratório de Banco de Dados (GPE
 
 ## 1. O que a atividade pede
 
-A rubrica completa está em [`extras/contexto/Proposta`](extras/contexto/Proposta/). São 5 critérios de 3 pontos cada (total 15).
+A rubrica completa está em [`Contexto/Proposta`](Contexto/Proposta/). São 5 critérios de 3 pontos cada (total 15).
 
 | Critério | Requisito |
 |---|---|
@@ -28,12 +28,12 @@ A rubrica completa está em [`extras/contexto/Proposta`](extras/contexto/Propost
 
 ## 2. O que foi entregue
 
-O script completo está em [`sql/netflix_bd.sql`](sql/netflix_bd.sql), organizado na ordem dos critérios. O mesmo conteúdo também está dividido em 9 arquivos menores, um por parte, em [`sql/partes`](sql/partes/), para facilitar a leitura e a apresentação.
+O script completo está em [`sql/netflix_bd.sql`](sql/netflix_bd.sql), organizado na ordem dos critérios. O mesmo conteúdo também está dividido em 9 arquivos menores, um por parte, em [`sql/Script Versionado`](sql/Script%20Versionado/), para facilitar a leitura e a apresentação.
 
-| Critério | Parte | Arquivo em `sql/partes` | Conteúdo |
+| Critério | Parte | Arquivo em `sql/Script Versionado` | Conteúdo |
 |---|---|---|---|
 | Estrutura do banco | 1 | `01_estrutura.sql` | Banco `NETFLIX` e 13 tabelas, com 13 chaves primárias, 12 chaves estrangeiras e 12 restrições `UNIQUE` |
-| Inserção de dados | 2 | `02_inserts.sql` | 712 comandos `INSERT` (a menor tabela tem 30 linhas) |
+| Inserção de dados | 2 | `02_inserts.sql` | 392 comandos `INSERT`: 30 em cada tabela (a tabela `conta` tem 32) |
 | Consultas SQL | 3 | `03_consultas.sql` | 12 consultas: `INNER`, `LEFT`, `RIGHT` e `SELF JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY` e `LIMIT` |
 | Scripts adicionais e índices | 4 e 5 | `04_indices.sql` e `05_procedures.sql` | 2 índices com justificativa e 3 stored procedures |
 | Recursos adicionais | 6 a 9 | `06_views.sql`, `07_triggers.sql`, `08_usuarios_permissoes.sql` e `09_transacoes.sql` | 3 views, 3 triggers, 5 usuários com `GRANT`/`REVOKE` e 4 exemplos de transação (`COMMIT`, `ROLLBACK`, `SAVEPOINT`) |
@@ -50,7 +50,7 @@ O script foi testado em MySQL 8.0 e pode ser executado mais de uma vez, pois rec
 | 1:N | plano e conta; conta e perfil; titulo e temporada; temporada e episodio |
 | N:N | titulo e categoria (`titulo_categoria`); pessoa e titulo (`participacao`); perfil e titulo (`historico_visualizacao`) |
 
-O modelo está em [`Banco de dados/netflix.mwb`](Banco%20de%20dados/netflix.mwb) (MySQL Workbench) e em PDF em [`extras/contexto/Banco de Dados`](extras/contexto/Banco%20de%20Dados/).
+O modelo está em [`Banco de dados/netflix.mwb`](Banco%20de%20dados/netflix.mwb) (MySQL Workbench) e em PDF em [`Contexto/Banco de Dados`](Contexto/Banco%20de%20Dados/).
 
 ## 4. Como executar
 
@@ -60,7 +60,7 @@ O modelo está em [`Banco de dados/netflix.mwb`](Banco%20de%20dados/netflix.mwb)
 
 O script apaga e recria o banco `NETFLIX` a cada execução.
 
-**Por partes:** também é possível executar os arquivos de [`sql/partes`](sql/partes/) um de cada vez, **na ordem de 01 a 09**. Cada arquivo depende dos anteriores. Para repetir, comece de novo pelo `01_estrutura.sql`, que recria o banco. O resultado é o mesmo do script completo.
+**Por partes:** também é possível executar os arquivos de [`sql/Script Versionado`](sql/Script%20Versionado/) um de cada vez, **na ordem de 01 a 09**. Cada arquivo depende dos anteriores. Para repetir, comece de novo pelo `01_estrutura.sql`, que recria o banco. O resultado é o mesmo do script completo.
 
 ## 5. Estrutura do repositório
 
@@ -69,16 +69,15 @@ README.md
 Banco de dados/          Modelo lógico (.mwb, para o MySQL Workbench)
 sql/
   netflix_bd.sql         Script completo do banco (partes 1 a 9)
-  partes/                O mesmo script dividido em 9 arquivos (01 a 09)
-extras/
-  contexto/
-    Proposta/            Rubrica da atividade (PDF)
-    Banco de Dados/      Modelo lógico em PDF e arquivos do 1º trabalho
-    Materiais/           Materiais da professora (scripts, PDFs e modelagem)
-    Obsidian/            Vault de contexto, com a explicação de cada parte
+  Script Versionado/     O mesmo script dividido em 9 arquivos (01 a 09)
+Contexto/
+  Proposta/              Rubrica da atividade (PDF)
+  Banco de Dados/        Modelo lógico em PDF e arquivos do 1º trabalho
+  Materiais/             Materiais da professora (scripts, PDFs e modelagem)
+  Obsidian/              Vault de contexto, com a explicação de cada parte
 ```
 
-O vault em [`extras/contexto/Obsidian`](extras/contexto/Obsidian/) tem uma nota de explicação para cada critério e a conferência do resultado contra a rubrica. Para abrir: Obsidian → *Open folder as vault* → `Obsidian-NetflixBD`.
+O vault em [`Contexto/Obsidian`](Contexto/Obsidian/) tem uma nota de explicação para cada critério e a conferência do resultado contra a rubrica. Para abrir: Obsidian → *Open folder as vault* → `Obsidian-NetflixBD`.
 
 ## 6. Autor
 

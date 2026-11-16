@@ -10,18 +10,20 @@ Testado: as 12 consultas rodam e **todas devolvem linhas**.
 
 | Nº | Tipo | O que responde | Tabelas | Linhas |
 |---|---|---|---|---|
-| 01 | INNER JOIN, 2 tabelas | Contas ativas com o plano e o valor | conta, plano | 31 |
-| 02 | INNER JOIN, 3 tabelas | Perfis infantis com conta e plano | perfil, conta, plano | 4 |
-| 03 | INNER JOIN, 7 tabelas | Relatório do que foi assistido até o fim | historico, perfil, conta, plano, titulo, titulo_categoria, categoria | 46 |
-| 04 | LEFT JOIN + `IS NULL` | Títulos nunca assistidos | titulo, historico | 11 |
-| 05 | LEFT JOIN + GROUP BY | Quantidade de perfis por conta (inclui 0) | conta, plano, perfil | 40 |
-| 06 | RIGHT JOIN, 2 tabelas | Todas as temporadas, com ou sem episódio | episodio, temporada | 72 |
-| 07 | RIGHT JOIN + GROUP BY | Títulos e minutos assistidos por perfil (inclui 0) | historico, perfil, conta | 60 |
-| 08 | SELF JOIN | Pares de títulos do mesmo tipo e ano | titulo (2x) | 13 |
-| 09 | GROUP BY + HAVING | Categorias com 5 ou mais títulos | categoria, titulo_categoria | 7 |
-| 10 | WHERE (AND, OR, LIKE, IS NULL) | Contas que precisam de atenção | conta | 13 |
+| 01 | INNER JOIN, 2 tabelas | Contas ativas com o plano e o valor | conta, plano | 27 |
+| 02 | INNER JOIN, 3 tabelas | Perfis infantis com conta e plano | perfil, conta, plano | 3 |
+| 03 | INNER JOIN, 7 tabelas | Relatório do que foi assistido até o fim | historico, perfil, conta, plano, titulo, titulo_categoria, categoria | 13 |
+| 04 | LEFT JOIN + `IS NULL` | Títulos nunca assistidos | titulo, historico | 12 |
+| 05 | LEFT JOIN + GROUP BY | Quantidade de perfis por conta (inclui 0) | conta, plano, perfil | 32 |
+| 06 | RIGHT JOIN, 2 tabelas | Todas as temporadas, com ou sem episódio | episodio, temporada | 45 |
+| 07 | RIGHT JOIN + GROUP BY | Títulos e minutos assistidos por perfil (inclui 0) | historico, perfil, conta | 30 |
+| 08 | SELF JOIN | Pares de títulos do mesmo tipo e ano | titulo (2x) | 14 |
+| 09 | GROUP BY + HAVING | Categorias com 4 ou mais títulos | categoria, titulo_categoria | 5 |
+| 10 | WHERE (AND, OR, LIKE, IS NULL) | Contas que precisam de atenção | conta | 9 |
 | 11 | GROUP BY + ORDER BY + LIMIT | Os 5 títulos mais assistidos | titulo, historico | 5 |
-| 12 | GROUP BY + HAVING + SUM | Receita mensal por plano (acima de R$ 100) | plano, conta | 4 |
+| 12 | GROUP BY + HAVING + SUM | Receita mensal por plano (acima de R$ 100) | plano, conta | 3 |
+
+Resultados que dá para citar: a consulta 09 devolve Drama (5), Comédia, Crime, Romance e Suspense (4 cada); a consulta 12 devolve Padrão (R$ 279,30), Premium (R$ 223,60) e Básico (R$ 129,50).
 
 ## Conceitos (com a fonte da professora)
 
@@ -41,7 +43,7 @@ Testado: as 12 consultas rodam e **todas devolvem linhas**.
 
 ## Detalhes que valem ponto na explicação
 
-- **Consulta 03**: sem `TC.categoria_principal = 1`, cada visualização apareceria repetida, uma vez por categoria do título. É o mesmo cuidado do exercício 03 dela (a Gabriela duplicada sem o filtro de data).
+- **Consulta 03**: sem `TC.categoria_principal = 1`, as visualizações dos títulos com duas categorias (1, 2, 3, 11 e 12) apareceriam repetidas. É o mesmo cuidado do exercício 03 dela (a Gabriela duplicada sem o filtro de data).
 - **Consultas 04 a 07** só têm graça por causa dos dados "sem correspondência" planejados na Parte 2.
 - **Consulta 12**: `WHERE` tira as contas não ativas antes de agrupar; `HAVING` tira os planos com receita baixa depois de somar.
 

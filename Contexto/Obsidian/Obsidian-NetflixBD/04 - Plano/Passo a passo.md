@@ -3,7 +3,7 @@
 Um arquivo só, na ordem dos critérios da rubrica. Estilo em [[Padroes dos scripts da professora]]. Conferência final em [[Comparacao com a rubrica]].
 
 - [x] **Parte 1 - Estrutura**: banco + 13 tabelas, fiéis ao modelo aprovado → [[Parte 1 - Estrutura (explicacao)]]
-- [x] **Parte 2 - Inserts**: 712 comandos, 30+ por tabela, com casos sem correspondência → [[Parte 2 - Inserts (explicacao)]]
+- [x] **Parte 2 - Inserts**: 392 comandos (o mínimo: 30 por tabela; conta tem 32), com casos sem correspondência → [[Parte 2 - Inserts (explicacao)]]
 - [x] **Parte 3 - Consultas**: 12 (INNER, LEFT, RIGHT, SELF JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT) → [[Parte 3 - Consultas (explicacao)]]
 - [x] **Parte 4 - Índices**: 2, com justificativa → [[Partes 4 e 5 - Indices e procedures (explicacao)]]
 - [x] **Parte 5 - Stored procedures**: 3 (scripts adicionais)
