@@ -1,11 +1,7 @@
 -- ==========================================================
 -- BANCO DE DADOS NETFLIX - ARQUIVO 09 DE 09
--- Transações (COMMIT, ROLLBACK e SAVEPOINT)
 -- Critério da atividade: Recursos adicionais do banco
---
 -- Pré-requisito: executar antes os arquivos 01 a 08, nesta ordem.
--- Este arquivo é a PARTE 9 do script completo (sql/netflix_bd.sql),
--- separada para facilitar a leitura e a apresentação.
 -- ==========================================================
 
 USE NETFLIX;
@@ -13,10 +9,6 @@ USE NETFLIX;
 -- ==========================================================
 -- PARTE 9 - TRANSAÇÕES (COMMIT, ROLLBACK E SAVEPOINT)
 -- ----------------------------------------------------------
--- START TRANSACTION inicia uma transação
--- COMMIT salva definitivamente
--- ROLLBACK desfaz alterações ainda não confirmadas
--- SAVEPOINT permite desfazer apenas uma parte
 -- ==========================================================
 
 -- ----------------------------------------------------------
@@ -32,10 +24,8 @@ VALUES (31, 'A Estreia da Semana', 'Filme adicionado dentro de uma transação.'
 INSERT INTO titulo_categoria (id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao)
 VALUES (31, 8, 1, 1, '2026-11-16');
 
--- Visualiza o título antes da confirmação
 SELECT id_titulo, nome, tipo FROM titulo WHERE id_titulo = 31;
 
--- COMMIT confirma a operação
 COMMIT;
 
 -- ----------------------------------------------------------
@@ -52,7 +42,6 @@ WHERE id_plano = 5;
 -- Conferindo antes de confirmar: o valor está errado (559.00)
 SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;
 
--- ROLLBACK desfaz tudo desde o START TRANSACTION
 ROLLBACK;
 
 -- Conferência: o valor voltou para 55.90
@@ -69,13 +58,10 @@ START TRANSACTION;
 DELETE FROM conta
 WHERE id_conta = 2;
 
--- A conta e os perfis sumiram (temporariamente)
 SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
 
--- Usuário percebeu que apagou a conta errada
 ROLLBACK;
 
--- A conta e os perfis voltam a existir
 SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
 
 -- ----------------------------------------------------------
@@ -84,25 +70,18 @@ SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
 -- ----------------------------------------------------------
 START TRANSACTION;
 
--- Primeira alteração: reajuste de 10% no plano Premium
 UPDATE plano
 SET valor_mensal = valor_mensal * 1.10
 WHERE id_plano = 5;
 
--- Criando um ponto de retorno
 SAVEPOINT ajuste_preco;
 
--- Segunda alteração: mudança no número de telas
 UPDATE plano
 SET telas_simultaneas = 1
 WHERE id_plano = 5;
 
--- A alteração de telas estava errada:
--- volta apenas até o SAVEPOINT
 ROLLBACK TO ajuste_preco;
 
--- O reajuste de preço continua mantido
--- A alteração de telas foi desfeita
 COMMIT;
 
 -- Conferência: valor reajustado (61.49) e telas = 4

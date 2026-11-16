@@ -1,11 +1,7 @@
 -- ==========================================================
 -- BANCO DE DADOS NETFLIX - ARQUIVO 04 DE 09
--- Índices (com justificativa)
 -- Critério da atividade: Scripts adicionais e índices
---
 -- Pré-requisito: executar antes os arquivos 01 a 03, nesta ordem.
--- Este arquivo é a PARTE 4 do script completo (sql/netflix_bd.sql),
--- separada para facilitar a leitura e a apresentação.
 -- ==========================================================
 
 USE NETFLIX;

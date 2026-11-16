@@ -1,33 +1,20 @@
 -- ==========================================================
 -- BANCO DE DADOS NETFLIX - ARQUIVO 01 DE 09
--- Estrutura do banco (banco e 13 tabelas)
 -- Critério da atividade: Estrutura do banco de dados
---
--- Este é o primeiro arquivo: ele apaga e recria o banco.
--- Este arquivo é a PARTE 1 do script completo (sql/netflix_bd.sql),
--- separada para facilitar a leitura e a apresentação.
+-- Primeiro arquivo: apaga e recria o banco.
 -- ==========================================================
 
 -- ==========================================================
 -- PARTE 1 - ESTRUTURA DO BANCO
 -- ==========================================================
 
--- Garante recriação limpa do banco (útil para testes)
 DROP DATABASE IF EXISTS NETFLIX;
 
--- Criação com charset UTF-8 moderno (utf8mb4)
 CREATE DATABASE IF NOT EXISTS NETFLIX
 DEFAULT CHARACTER SET utf8mb4
 DEFAULT COLLATE utf8mb4_unicode_ci;
 
 USE NETFLIX;
-
-
--- ----------------------------------------------------------
--- Ordem de criação: uma tabela com chave estrangeira só pode
--- ser criada DEPOIS da tabela que ela referencia. Por isso as
--- tabelas estão em 4 grupos, das independentes às dependentes.
--- ----------------------------------------------------------
 
 
 -- ==========================================================
@@ -99,7 +86,6 @@ CREATE TABLE IF NOT EXISTS conta (
     status        ENUM('Ativa','Suspensa','Cancelada') NOT NULL DEFAULT 'Ativa',
     FOREIGN KEY (id_plano) REFERENCES plano (id_plano)
     ON DELETE RESTRICT
-        -- Não permite excluir um plano que ainda tem contas.
     ON UPDATE CASCADE
 );
 
@@ -115,7 +101,6 @@ CREATE TABLE IF NOT EXISTS temporada (
     sinopse          TEXT,
     disponivel       TINYINT(1) NOT NULL DEFAULT 1,
     UNIQUE (id_titulo, numero_temporada),
-        -- Um título não pode ter duas "Temporada 1".
     FOREIGN KEY (id_titulo) REFERENCES titulo (id_titulo)
     ON DELETE CASCADE
     ON UPDATE CASCADE
@@ -127,8 +112,7 @@ CREATE TABLE IF NOT EXISTS temporada (
 -- ==========================================================
 
 -- DADOS_COBRANCA: forma de pagamento da conta
--- Relacionamento 1:1 -> o UNIQUE em id_conta garante
--- no máximo UMA cobrança por conta.
+-- Relacionamento 1:1 com conta (UNIQUE em id_conta)
 CREATE TABLE IF NOT EXISTS dados_cobranca (
     id_cobranca            INT PRIMARY KEY AUTO_INCREMENT,
     id_conta               INT          NOT NULL UNIQUE,
@@ -154,7 +138,6 @@ CREATE TABLE IF NOT EXISTS perfil (
     perfil_infantil TINYINT(1)  NOT NULL DEFAULT 0,
     pin             CHAR(4),
     UNIQUE (id_conta, nome),
-        -- Uma conta não pode ter dois perfis com o mesmo nome.
     FOREIGN KEY (id_conta) REFERENCES conta (id_conta)
     ON DELETE CASCADE
     ON UPDATE CASCADE
@@ -183,7 +166,7 @@ CREATE TABLE IF NOT EXISTS episodio (
 -- ==========================================================
 
 -- CONFIGURACAO_PERFIL: preferências de um perfil
--- Relacionamento 1:1 -> UNIQUE em id_perfil.
+-- Relacionamento 1:1 com perfil (UNIQUE em id_perfil)
 CREATE TABLE IF NOT EXISTS configuracao_perfil (
     id_configuracao       INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil             INT         NOT NULL UNIQUE,
@@ -199,7 +182,6 @@ CREATE TABLE IF NOT EXISTS configuracao_perfil (
 );
 
 -- TITULO_CATEGORIA: tabela associativa (N:N titulo x categoria)
--- Um título tem várias categorias e uma categoria tem vários títulos.
 CREATE TABLE IF NOT EXISTS titulo_categoria (
     id_titulo_categoria INT PRIMARY KEY AUTO_INCREMENT,
     id_titulo           INT        NOT NULL,
@@ -208,18 +190,15 @@ CREATE TABLE IF NOT EXISTS titulo_categoria (
     ordem_exibicao      TINYINT    NOT NULL DEFAULT 1,
     data_associacao     DATE       NOT NULL,
     UNIQUE (id_titulo, id_categoria),
-        -- Não repete a mesma categoria no mesmo título.
     FOREIGN KEY (id_titulo) REFERENCES titulo (id_titulo)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
     FOREIGN KEY (id_categoria) REFERENCES categoria (id_categoria)
     ON DELETE RESTRICT
-        -- Não permite excluir uma categoria que está em uso.
     ON UPDATE CASCADE
 );
 
 -- PARTICIPACAO: tabela associativa (N:N pessoa x titulo)
--- Uma pessoa atua/dirige em vários títulos e um título tem várias pessoas.
 CREATE TABLE IF NOT EXISTS participacao (
     id_participacao INT PRIMARY KEY AUTO_INCREMENT,
     id_pessoa       INT        NOT NULL,
@@ -229,8 +208,6 @@ CREATE TABLE IF NOT EXISTS participacao (
     papel_principal TINYINT(1) NOT NULL DEFAULT 0,
     ordem_credito   TINYINT    NOT NULL DEFAULT 1,
     UNIQUE (id_pessoa, id_titulo, funcao),
-        -- A mesma pessoa pode ser Ator E Diretor do mesmo título,
-        -- mas não duas vezes na mesma função.
     FOREIGN KEY (id_pessoa) REFERENCES pessoa (id_pessoa)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
@@ -240,7 +217,6 @@ CREATE TABLE IF NOT EXISTS participacao (
 );
 
 -- HISTORICO_VISUALIZACAO: tabela associativa (N:N perfil x titulo)
--- Registra o que cada perfil assistiu.
 CREATE TABLE IF NOT EXISTS historico_visualizacao (
     id_visualizacao          INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil                INT        NOT NULL,
@@ -251,7 +227,6 @@ CREATE TABLE IF NOT EXISTS historico_visualizacao (
     concluido                TINYINT(1) NOT NULL DEFAULT 0,
     dispositivo              ENUM('TV','Celular','Notebook','Tablet','Console') NOT NULL,
     UNIQUE (id_perfil, id_titulo),
-        -- Um registro por perfil e título.
     FOREIGN KEY (id_perfil) REFERENCES perfil (id_perfil)
     ON DELETE CASCADE
     ON UPDATE CASCADE,

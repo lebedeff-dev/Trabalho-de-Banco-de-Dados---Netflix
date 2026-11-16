@@ -21,7 +21,7 @@ Decisões tomadas:
 - O dono pediu triggers **simples**: as três seguem o molde `IF NEW.campo ... THEN SET NEW.campo = ...` (sem `DECLARE`, sem `SIGNAL`, sem alterar outra tabela).
 - Um `INSERT` por linha, para cada linha contar como um comando.
 - Inserts no **mínimo**: 30 por tabela (392 no total; `conta` tem 32 para existirem contas sem cobrança). O dono pediu a redução para o script ficar menor.
-- Comentários enxutos a pedido do dono: ficam os títulos de seção, a descrição de cada item, a regra de cada trigger e a justificativa dos índices. A explicação detalhada (conceitos, fontes da professora, perguntas prováveis) fica no vault, não no script.
+- **Comentários do script: só organização e o essencial para a professora.** Ficam: títulos de parte e de grupo, nome de cada tabela e seu relacionamento, título e descrição de cada consulta, justificativa dos índices (exigida pela rubrica), regra e tipo de cada trigger, lista de usuários, título dos exemplos e as linhas de teste/conferência. **Não colocar explicação de aula no script**: toda explicação vai para o vault. O que saiu está em [[Comentarios retirados do script]].
 - O dono reorganizou as pastas: o contexto fica em `Contexto/` (raiz) e o script dividido em `sql/Script Versionado/`.
 - O script existe em duas formas com o **mesmo conteúdo**: `sql/netflix_bd.sql` (completo, para entregar) e `sql/Script Versionado/01` a `09` (dividido, para apresentar). **Qualquer alteração precisa ser feita nas duas.** Os arquivos de `partes` rodam em ordem; para repetir, recomeçar do 01.
 

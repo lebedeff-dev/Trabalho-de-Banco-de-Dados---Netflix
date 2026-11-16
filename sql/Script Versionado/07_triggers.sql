@@ -1,11 +1,7 @@
 -- ==========================================================
 -- BANCO DE DADOS NETFLIX - ARQUIVO 07 DE 09
--- Triggers
 -- Critério da atividade: Recursos adicionais do banco
---
 -- Pré-requisito: executar antes os arquivos 01 a 06, nesta ordem.
--- Este arquivo é a PARTE 7 do script completo (sql/netflix_bd.sql),
--- separada para facilitar a leitura e a apresentação.
 -- ==========================================================
 
 USE NETFLIX;
@@ -13,8 +9,6 @@ USE NETFLIX;
 -- ==========================================================
 -- PARTE 7 - TRIGGERS
 -- ----------------------------------------------------------
--- Cada exemplo tem: a regra, a criação da trigger, o comando
--- que a dispara e um SELECT para conferir o resultado.
 -- ==========================================================
 
 -- ==========================================================
@@ -30,15 +24,10 @@ DROP TRIGGER IF EXISTS tg_validar_minuto_parada;
 
 DELIMITER //
 CREATE TRIGGER tg_validar_minuto_parada
--- BEFORE executa antes da gravação no banco,
--- permitindo alterar ou validar valores
 BEFORE INSERT ON historico_visualizacao
--- Executa para cada registro inserido
 FOR EACH ROW
 BEGIN
-    -- NEW representa o registro que está tentando ser inserido
     IF NEW.minuto_parada < 0 THEN
-        -- Altera o valor antes da gravação
         SET NEW.minuto_parada = 0;
     END IF;
 END //
@@ -100,9 +89,6 @@ WHERE id_conta = 5;
 --
 -- Tipo:
 -- BEFORE UPDATE
---
--- No UPDATE existem OLD e NEW ao mesmo tempo:
--- OLD é o valor antigo e NEW é o valor novo.
 -- ==========================================================
 DROP TRIGGER IF EXISTS tg_validar_valor_plano;
 

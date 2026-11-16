@@ -31,6 +31,8 @@
 | Scripts adicionais e índices | `04_indices.sql`, `05_procedures.sql` | [[Partes 4 e 5 - Indices e procedures (explicacao)]] |
 | Recursos adicionais | `06_views.sql`, `07_triggers.sql`, `08_usuarios_permissoes.sql`, `09_transacoes.sql` | [[Partes 6 a 9 - Views, triggers, usuarios e transacoes (explicacao)]] |
 
+Tudo o que saiu do script quando os comentários foram enxugados está em [[Comentarios retirados do script]].
+
 ## Estado
 - [x] Pasta organizada na estrutura do repositório de exemplo
 - [x] Vault criado

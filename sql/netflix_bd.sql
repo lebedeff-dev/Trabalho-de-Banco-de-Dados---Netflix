@@ -1,31 +1,6 @@
 -- ==========================================================
 -- BANCO DE DADOS NETFLIX
 -- Laboratório de Banco de Dados - AT1 - Implementação
--- SGBD: MySQL 8
---
--- Implementação fiel ao modelo lógico aprovado
--- (Banco de dados/netflix.mwb): 13 tabelas e 12 chaves
--- estrangeiras.
---
--- Conteúdo deste arquivo, na ordem dos critérios da atividade:
---
---   Critério "Estrutura do banco de dados"
---     PARTE 1 - Estrutura (banco e 13 tabelas)
---   Critério "Inserção de dados"
---     PARTE 2 - Inserção de dados (mínimo de 30 INSERT por tabela)
---   Critério "Consultas SQL (queries)"
---     PARTE 3 - Consultas (JOINs, filtros, agrupamentos, ordenação)
---   Critério "Scripts adicionais e índices"
---     PARTE 4 - Índices (com justificativa do campo indexado)
---     PARTE 5 - Stored procedures
---   Critério "Recursos adicionais do banco"
---     PARTE 6 - Views
---     PARTE 7 - Triggers
---     PARTE 8 - Usuários e permissões (GRANT e REVOKE)
---     PARTE 9 - Transações (COMMIT, ROLLBACK e SAVEPOINT)
---
--- Como executar: abra este arquivo no MySQL Workbench e execute
--- tudo (o script recria o banco do zero a cada execução).
 -- ==========================================================
 
 
@@ -33,22 +8,13 @@
 -- PARTE 1 - ESTRUTURA DO BANCO
 -- ==========================================================
 
--- Garante recriação limpa do banco (útil para testes)
 DROP DATABASE IF EXISTS NETFLIX;
 
--- Criação com charset UTF-8 moderno (utf8mb4)
 CREATE DATABASE IF NOT EXISTS NETFLIX
 DEFAULT CHARACTER SET utf8mb4
 DEFAULT COLLATE utf8mb4_unicode_ci;
 
 USE NETFLIX;
-
-
--- ----------------------------------------------------------
--- Ordem de criação: uma tabela com chave estrangeira só pode
--- ser criada DEPOIS da tabela que ela referencia. Por isso as
--- tabelas estão em 4 grupos, das independentes às dependentes.
--- ----------------------------------------------------------
 
 
 -- ==========================================================
@@ -120,7 +86,6 @@ CREATE TABLE IF NOT EXISTS conta (
     status        ENUM('Ativa','Suspensa','Cancelada') NOT NULL DEFAULT 'Ativa',
     FOREIGN KEY (id_plano) REFERENCES plano (id_plano)
     ON DELETE RESTRICT
-        -- Não permite excluir um plano que ainda tem contas.
     ON UPDATE CASCADE
 );
 
@@ -136,7 +101,6 @@ CREATE TABLE IF NOT EXISTS temporada (
     sinopse          TEXT,
     disponivel       TINYINT(1) NOT NULL DEFAULT 1,
     UNIQUE (id_titulo, numero_temporada),
-        -- Um título não pode ter duas "Temporada 1".
     FOREIGN KEY (id_titulo) REFERENCES titulo (id_titulo)
     ON DELETE CASCADE
     ON UPDATE CASCADE
@@ -148,8 +112,7 @@ CREATE TABLE IF NOT EXISTS temporada (
 -- ==========================================================
 
 -- DADOS_COBRANCA: forma de pagamento da conta
--- Relacionamento 1:1 -> o UNIQUE em id_conta garante
--- no máximo UMA cobrança por conta.
+-- Relacionamento 1:1 com conta (UNIQUE em id_conta)
 CREATE TABLE IF NOT EXISTS dados_cobranca (
     id_cobranca            INT PRIMARY KEY AUTO_INCREMENT,
     id_conta               INT          NOT NULL UNIQUE,
@@ -175,7 +138,6 @@ CREATE TABLE IF NOT EXISTS perfil (
     perfil_infantil TINYINT(1)  NOT NULL DEFAULT 0,
     pin             CHAR(4),
     UNIQUE (id_conta, nome),
-        -- Uma conta não pode ter dois perfis com o mesmo nome.
     FOREIGN KEY (id_conta) REFERENCES conta (id_conta)
     ON DELETE CASCADE
     ON UPDATE CASCADE
@@ -204,7 +166,7 @@ CREATE TABLE IF NOT EXISTS episodio (
 -- ==========================================================
 
 -- CONFIGURACAO_PERFIL: preferências de um perfil
--- Relacionamento 1:1 -> UNIQUE em id_perfil.
+-- Relacionamento 1:1 com perfil (UNIQUE em id_perfil)
 CREATE TABLE IF NOT EXISTS configuracao_perfil (
     id_configuracao       INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil             INT         NOT NULL UNIQUE,
@@ -220,7 +182,6 @@ CREATE TABLE IF NOT EXISTS configuracao_perfil (
 );
 
 -- TITULO_CATEGORIA: tabela associativa (N:N titulo x categoria)
--- Um título tem várias categorias e uma categoria tem vários títulos.
 CREATE TABLE IF NOT EXISTS titulo_categoria (
     id_titulo_categoria INT PRIMARY KEY AUTO_INCREMENT,
     id_titulo           INT        NOT NULL,
@@ -229,18 +190,15 @@ CREATE TABLE IF NOT EXISTS titulo_categoria (
     ordem_exibicao      TINYINT    NOT NULL DEFAULT 1,
     data_associacao     DATE       NOT NULL,
     UNIQUE (id_titulo, id_categoria),
-        -- Não repete a mesma categoria no mesmo título.
     FOREIGN KEY (id_titulo) REFERENCES titulo (id_titulo)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
     FOREIGN KEY (id_categoria) REFERENCES categoria (id_categoria)
     ON DELETE RESTRICT
-        -- Não permite excluir uma categoria que está em uso.
     ON UPDATE CASCADE
 );
 
 -- PARTICIPACAO: tabela associativa (N:N pessoa x titulo)
--- Uma pessoa atua/dirige em vários títulos e um título tem várias pessoas.
 CREATE TABLE IF NOT EXISTS participacao (
     id_participacao INT PRIMARY KEY AUTO_INCREMENT,
     id_pessoa       INT        NOT NULL,
@@ -250,8 +208,6 @@ CREATE TABLE IF NOT EXISTS participacao (
     papel_principal TINYINT(1) NOT NULL DEFAULT 0,
     ordem_credito   TINYINT    NOT NULL DEFAULT 1,
     UNIQUE (id_pessoa, id_titulo, funcao),
-        -- A mesma pessoa pode ser Ator E Diretor do mesmo título,
-        -- mas não duas vezes na mesma função.
     FOREIGN KEY (id_pessoa) REFERENCES pessoa (id_pessoa)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
@@ -261,7 +217,6 @@ CREATE TABLE IF NOT EXISTS participacao (
 );
 
 -- HISTORICO_VISUALIZACAO: tabela associativa (N:N perfil x titulo)
--- Registra o que cada perfil assistiu.
 CREATE TABLE IF NOT EXISTS historico_visualizacao (
     id_visualizacao          INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil                INT        NOT NULL,
@@ -272,7 +227,6 @@ CREATE TABLE IF NOT EXISTS historico_visualizacao (
     concluido                TINYINT(1) NOT NULL DEFAULT 0,
     dispositivo              ENUM('TV','Celular','Notebook','Tablet','Console') NOT NULL,
     UNIQUE (id_perfil, id_titulo),
-        -- Um registro por perfil e título.
     FOREIGN KEY (id_perfil) REFERENCES perfil (id_perfil)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
@@ -284,12 +238,6 @@ CREATE TABLE IF NOT EXISTS historico_visualizacao (
 -- ==========================================================
 -- PARTE 2 - INSERÇÃO DE DADOS
 -- ----------------------------------------------------------
--- Dados fictícios (nomes, e-mails e hashes de senha não são reais).
--- Cada tabela tem no mínimo 30 comandos INSERT, um por linha, na
--- mesma ordem das tabelas (tabela "mãe" antes da tabela "filha").
--- Os ids são informados para as chaves estrangeiras ficarem fáceis
--- de conferir; como o banco é recriado, eles sempre começam em 1.
---
 -- Os dados foram pensados para que as consultas (JOINs) tenham
 -- casos "sem correspondência", como no exemplo da professora:
 --   * Planos sem contas: 8 e 9, 11, 13, 15 a 30
@@ -302,11 +250,9 @@ CREATE TABLE IF NOT EXISTS historico_visualizacao (
 --   * Temporadas sem episódios: 16 a 30
 -- ==========================================================
 
-SET NAMES utf8mb4;  -- garante que os acentos sejam gravados corretamente
+SET NAMES utf8mb4;
 
 -- PLANO (30)
---   Os planos 1 a 5 são os regulares.
---   Planos sem nenhuma conta (sem correspondência no LEFT JOIN): 8 e 9, 11, 13, 15 a 30.
 INSERT INTO plano (id_plano, nome, descricao, valor_mensal, qualidade_maxima, telas_simultaneas, permite_download, data_criacao) VALUES (1, 'Mobile', 'Assista no celular e no tablet. Plano regular.', 19.90, 'SD', 1, 1, '2019-04-01');
 INSERT INTO plano (id_plano, nome, descricao, valor_mensal, qualidade_maxima, telas_simultaneas, permite_download, data_criacao) VALUES (2, 'Básico', 'Uma tela em HD. Plano regular.', 25.90, 'HD', 1, 1, '2019-06-30');
 INSERT INTO plano (id_plano, nome, descricao, valor_mensal, qualidade_maxima, telas_simultaneas, permite_download, data_criacao) VALUES (3, 'Padrão com Anúncios', 'Duas telas em Full HD, com anúncios. Plano regular.', 18.90, 'Full HD', 2, 0, '2019-09-28');
@@ -339,8 +285,6 @@ INSERT INTO plano (id_plano, nome, descricao, valor_mensal, qualidade_maxima, te
 INSERT INTO plano (id_plano, nome, descricao, valor_mensal, qualidade_maxima, telas_simultaneas, permite_download, data_criacao) VALUES (30, 'Premium Corporativo', 'Quatro telas em 4K, sem anúncios. Plano para empresas.', 89.44, '4K UHD', 4, 1, '2026-05-24');
 
 -- CATEGORIA (30)
---   Categorias sem nenhum título (sem correspondência): 3, 5, 9 a 11, 14 a 22, 24 a 30.
---   As categorias 28 a 30 estão inativas (ativa = 0).
 INSERT INTO categoria (id_categoria, nome, descricao, codigo_interno, ativa, data_criacao) VALUES (1, 'Ação', 'Títulos da categoria Ação.', 'ACAO', 1, '2020-01-10');
 INSERT INTO categoria (id_categoria, nome, descricao, codigo_interno, ativa, data_criacao) VALUES (2, 'Aventura', 'Títulos da categoria Aventura.', 'AVEN', 1, '2020-01-25');
 INSERT INTO categoria (id_categoria, nome, descricao, codigo_interno, ativa, data_criacao) VALUES (3, 'Animação', 'Títulos da categoria Animação.', 'ANIM', 1, '2020-02-09');
@@ -373,7 +317,6 @@ INSERT INTO categoria (id_categoria, nome, descricao, codigo_interno, ativa, dat
 INSERT INTO categoria (id_categoria, nome, descricao, codigo_interno, ativa, data_criacao) VALUES (30, 'Faroeste', 'Títulos da categoria Faroeste.', 'FARO', 0, '2021-03-20');
 
 -- PESSOA (30)
---   Pessoas que não participam de nenhum título (sem correspondência): 1, 3 a 5, 10, 12, 16 e 17, 21, 25, 27 a 30.
 INSERT INTO pessoa (id_pessoa, nome, nome_artistico, data_nascimento, nacionalidade, biografia, em_atividade) VALUES (1, 'Diego Duarte', NULL, '1959-03-18', 'Brasileira', NULL, 1);
 INSERT INTO pessoa (id_pessoa, nome, nome_artistico, data_nascimento, nacionalidade, biografia, em_atividade) VALUES (2, 'Tiago Moreira', NULL, '1999-02-23', 'Brasileira', NULL, 1);
 INSERT INTO pessoa (id_pessoa, nome, nome_artistico, data_nascimento, nacionalidade, biografia, em_atividade) VALUES (3, 'Zeca Oliveira', NULL, '1971-07-12', 'Brasileira', 'Zeca Oliveira atua na indústria audiovisual há mais de 8 anos.', 1);
@@ -406,9 +349,6 @@ INSERT INTO pessoa (id_pessoa, nome, nome_artistico, data_nascimento, nacionalid
 INSERT INTO pessoa (id_pessoa, nome, nome_artistico, data_nascimento, nacionalidade, biografia, em_atividade) VALUES (30, 'Gabriela Costa', 'Gabriela Star', '1966-11-30', 'Francesa', 'Gabriela Costa atua na indústria audiovisual há mais de 4 anos.', 1);
 
 -- TITULO (30)
---   Títulos 1 a 10: séries. 11 a 22: filmes. 23 a 26: documentários. 27 a 30: stand-ups.
---   Títulos nunca assistidos (sem correspondência): 1, 8 e 9, 11 e 12, 17, 25 a 30.
---   Séries não têm duração total (duracao_minutos = NULL); a duração fica nos episódios.
 INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo, disponivel) VALUES (1, 'Sombras da Capital', 'Uma jornalista investiga um esquema de corrupção em Brasília.', 'Serie', 2016, '18', NULL, 'Português', '2024-12-10', 1);
 INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo, disponivel) VALUES (2, 'O Último Verão', 'Amigos de infância se reencontram numa cidade litorânea.', 'Serie', 2026, '16', NULL, 'Português', '2026-03-12', 1);
 INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo, disponivel) VALUES (3, 'Código Zero', 'Uma equipe de hackers tenta impedir um ataque global.', 'Serie', 2024, '10', NULL, 'Português', '2026-03-09', 1);
@@ -441,9 +381,6 @@ INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificaca
 INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo, disponivel) VALUES (30, 'O Último Show', 'A despedida de um comediante veterano.', 'Stand-up', 2019, '18', 83, 'Português', '2023-11-24', 1);
 
 -- CONTA (32)
---   Senhas são hashes fictícios, apenas ilustrativos.
---   Contas sem perfil: 25 a 32. Contas 7, 16 e 22 estão suspensas; 11 e 24, canceladas.
---   São 32 contas (e não 30) para existirem contas sem dados de cobrança.
 INSERT INTO conta (id_conta, id_plano, email, senha_hash, telefone, pais, data_cadastro, status) VALUES (1, 5, 'sofia.alves1@exemplo.com', '$2y$10$a991e84c62a25c5a972f67c47cd81f31063c2dde905a8428977b0', '(61) 98786-7179', 'BR', '2023-05-06 20:42:00', 'Ativa');
 INSERT INTO conta (id_conta, id_plano, email, senha_hash, telefone, pais, data_cadastro, status) VALUES (2, 3, 'henrique.alves2@exemplo.com', '$2y$10$02a3e1fc659a693124e09cc25a8b49249e126cbfa0dddf8f45d4d', '(61) 98058-9869', 'BR', '2025-11-01 19:56:00', 'Ativa');
 INSERT INTO conta (id_conta, id_plano, email, senha_hash, telefone, pais, data_cadastro, status) VALUES (3, 2, 'isabela.alves3@exemplo.com', '$2y$10$503ae5403efc54b676a4b551f30d9439e42aa4c362e8d21dc37a4', '(61) 98033-5535', 'BR', '2025-01-13 22:26:00', 'Ativa');
@@ -478,8 +415,6 @@ INSERT INTO conta (id_conta, id_plano, email, senha_hash, telefone, pais, data_c
 INSERT INTO conta (id_conta, id_plano, email, senha_hash, telefone, pais, data_cadastro, status) VALUES (32, 4, 'nicolas.duarte32@exemplo.com', '$2y$10$a16063f29bd559e9de012f89811766c96dd58bf17c68fcdf872bb', '(61) 99571-9104', 'BR', '2025-10-20 13:27:00', 'Ativa');
 
 -- DADOS_COBRANCA (30)
---   Relacionamento 1:1 com conta. Contas sem dados de cobrança: 5 e 32.
---   Contas suspensas ou canceladas têm cobranca_ativa = 0.
 INSERT INTO dados_cobranca (id_cobranca, id_conta, nome_titular, forma_pagamento, ultimos_quatro_digitos, dia_vencimento, data_proxima_cobranca, cobranca_ativa) VALUES (1, 1, 'Sofia Alves', 'Cartao de Debito', '5414', 2, '2026-12-02', 1);
 INSERT INTO dados_cobranca (id_cobranca, id_conta, nome_titular, forma_pagamento, ultimos_quatro_digitos, dia_vencimento, data_proxima_cobranca, cobranca_ativa) VALUES (2, 2, 'Henrique Alves', 'Pix', NULL, 24, '2026-12-24', 1);
 INSERT INTO dados_cobranca (id_cobranca, id_conta, nome_titular, forma_pagamento, ultimos_quatro_digitos, dia_vencimento, data_proxima_cobranca, cobranca_ativa) VALUES (3, 3, 'Isabela Alves', 'Cartao de Credito', '0172', 9, '2026-12-09', 1);
@@ -512,8 +447,6 @@ INSERT INTO dados_cobranca (id_cobranca, id_conta, nome_titular, forma_pagamento
 INSERT INTO dados_cobranca (id_cobranca, id_conta, nome_titular, forma_pagamento, ultimos_quatro_digitos, dia_vencimento, data_proxima_cobranca, cobranca_ativa) VALUES (30, 31, 'João Teixeira', 'Cartao de Debito', '9938', 16, '2026-12-16', 1);
 
 -- PERFIL (30)
---   As contas 1 a 24 têm perfil; as contas 2, 3, 6, 9 e 12 têm mais de um.
---   O nome do perfil não se repete na mesma conta.
 INSERT INTO perfil (id_perfil, id_conta, nome, avatar, data_criacao, perfil_infantil, pin) VALUES (1, 1, 'Sofia', 'verde', '2023-05-07', 0, '5358');
 INSERT INTO perfil (id_perfil, id_conta, nome, avatar, data_criacao, perfil_infantil, pin) VALUES (2, 2, 'Henrique', 'azul', '2025-11-01', 0, NULL);
 INSERT INTO perfil (id_perfil, id_conta, nome, avatar, data_criacao, perfil_infantil, pin) VALUES (3, 2, 'Kids', 'kids', '2025-11-16', 1, NULL);
@@ -546,7 +479,6 @@ INSERT INTO perfil (id_perfil, id_conta, nome, avatar, data_criacao, perfil_infa
 INSERT INTO perfil (id_perfil, id_conta, nome, avatar, data_criacao, perfil_infantil, pin) VALUES (30, 24, 'Carla', 'verde', '2026-05-17', 0, '8852');
 
 -- CONFIGURACAO_PERFIL (30)
---   Relacionamento 1:1 com perfil: uma configuração para cada perfil.
 INSERT INTO configuracao_perfil (id_configuracao, id_perfil, idioma_interface, idioma_legenda, legendas_ativas, reproducao_automatica, qualidade_preferida, data_atualizacao) VALUES (1, 1, 'Ingles', 'Portugues', 0, 1, 'Automatica', '2025-07-10 12:26:00');
 INSERT INTO configuracao_perfil (id_configuracao, id_perfil, idioma_interface, idioma_legenda, legendas_ativas, reproducao_automatica, qualidade_preferida, data_atualizacao) VALUES (2, 2, 'Espanhol', 'Espanhol', 1, 0, 'Baixa', '2025-08-15 19:56:00');
 INSERT INTO configuracao_perfil (id_configuracao, id_perfil, idioma_interface, idioma_legenda, legendas_ativas, reproducao_automatica, qualidade_preferida, data_atualizacao) VALUES (3, 3, 'Espanhol', 'Portugues', 1, 1, 'Media', '2025-06-08 18:09:00');
@@ -579,7 +511,6 @@ INSERT INTO configuracao_perfil (id_configuracao, id_perfil, idioma_interface, i
 INSERT INTO configuracao_perfil (id_configuracao, id_perfil, idioma_interface, idioma_legenda, legendas_ativas, reproducao_automatica, qualidade_preferida, data_atualizacao) VALUES (30, 30, 'Portugues', 'Espanhol', 0, 1, 'Automatica', '2025-06-22 10:17:00');
 
 -- TEMPORADA (30)
---   Somente as séries (títulos 1 a 10) têm temporadas: 3 para cada série.
 INSERT INTO temporada (id_temporada, id_titulo, numero_temporada, nome, ano_lancamento, data_estreia, sinopse, disponivel) VALUES (1, 1, 1, 'Temporada 1', 2016, '2016-05-20', 'Temporada 1 de Sombras da Capital.', 1);
 INSERT INTO temporada (id_temporada, id_titulo, numero_temporada, nome, ano_lancamento, data_estreia, sinopse, disponivel) VALUES (2, 1, 2, 'Temporada 2', 2017, '2017-08-09', 'Temporada 2 de Sombras da Capital.', 1);
 INSERT INTO temporada (id_temporada, id_titulo, numero_temporada, nome, ano_lancamento, data_estreia, sinopse, disponivel) VALUES (3, 1, 3, 'Temporada 3', 2018, '2018-12-24', 'Temporada 3 de Sombras da Capital.', 1);
@@ -612,8 +543,6 @@ INSERT INTO temporada (id_temporada, id_titulo, numero_temporada, nome, ano_lanc
 INSERT INTO temporada (id_temporada, id_titulo, numero_temporada, nome, ano_lancamento, data_estreia, sinopse, disponivel) VALUES (30, 10, 3, NULL, 2017, '2017-01-01', 'Temporada 3 de Fronteira Sul.', 1);
 
 -- EPISODIO (30)
---   Dois episódios para cada temporada de 1 a 15.
---   Temporadas sem episódios (sem correspondência): 16 a 30.
 INSERT INTO episodio (id_episodio, id_temporada, numero_episodio, titulo_episodio, sinopse, duracao_minutos, data_estreia, disponivel) VALUES (1, 1, 1, 'Alianças (1)', 'Episódio 1 da temporada 1.', 61, '2016-05-20', 1);
 INSERT INTO episodio (id_episodio, id_temporada, numero_episodio, titulo_episodio, sinopse, duracao_minutos, data_estreia, disponivel) VALUES (2, 1, 2, 'Pontos Cegos (2)', 'Episódio 2 da temporada 1.', 60, '2016-05-27', 1);
 INSERT INTO episodio (id_episodio, id_temporada, numero_episodio, titulo_episodio, sinopse, duracao_minutos, data_estreia, disponivel) VALUES (3, 2, 1, 'Recomeço (1)', 'Episódio 1 da temporada 2.', 56, '2017-08-09', 1);
@@ -646,9 +575,6 @@ INSERT INTO episodio (id_episodio, id_temporada, numero_episodio, titulo_episodi
 INSERT INTO episodio (id_episodio, id_temporada, numero_episodio, titulo_episodio, sinopse, duracao_minutos, data_estreia, disponivel) VALUES (30, 15, 2, 'A Decisão (2)', 'Episódio 2 da temporada 3.', 38, '2017-03-03', 1);
 
 -- TITULO_CATEGORIA (30)
---   Relacionamento N:N entre titulo e categoria.
---   Os títulos 1, 2, 3, 11 e 12 têm duas categorias; a primeira é a principal.
---   Títulos sem categoria (sem correspondência): 26 a 30.
 INSERT INTO titulo_categoria (id_titulo_categoria, id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao) VALUES (1, 1, 8, 1, 1, '2024-12-10');
 INSERT INTO titulo_categoria (id_titulo_categoria, id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao) VALUES (2, 1, 6, 0, 2, '2024-12-10');
 INSERT INTO titulo_categoria (id_titulo_categoria, id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao) VALUES (3, 2, 6, 1, 1, '2026-03-12');
@@ -681,8 +607,6 @@ INSERT INTO titulo_categoria (id_titulo_categoria, id_titulo, id_categoria, cate
 INSERT INTO titulo_categoria (id_titulo_categoria, id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao) VALUES (30, 25, 7, 1, 1, '2024-02-11');
 
 -- PARTICIPACAO (30)
---   Relacionamento N:N entre pessoa e titulo.
---   No título 1 a mesma pessoa é Diretor e Ator: funções diferentes no mesmo título são permitidas.
 INSERT INTO participacao (id_participacao, id_pessoa, id_titulo, funcao, nome_personagem, papel_principal, ordem_credito) VALUES (1, 7, 1, 'Diretor', NULL, 0, 1);
 INSERT INTO participacao (id_participacao, id_pessoa, id_titulo, funcao, nome_personagem, papel_principal, ordem_credito) VALUES (2, 7, 1, 'Ator', 'Narrador', 1, 2);
 INSERT INTO participacao (id_participacao, id_pessoa, id_titulo, funcao, nome_personagem, papel_principal, ordem_credito) VALUES (3, 7, 2, 'Diretor', NULL, 0, 1);
@@ -715,9 +639,6 @@ INSERT INTO participacao (id_participacao, id_pessoa, id_titulo, funcao, nome_pe
 INSERT INTO participacao (id_participacao, id_pessoa, id_titulo, funcao, nome_personagem, papel_principal, ordem_credito) VALUES (30, 7, 6, 'Roteirista', NULL, 0, 3);
 
 -- HISTORICO_VISUALIZACAO (30)
---   Relacionamento N:N entre perfil e titulo (um registro por par perfil/título).
---   O minuto_parada nunca passa da duração do título.
---   Perfis que nunca assistiram a nada: 1 a 3, 6, 8, 13, 18, 20, 22 a 24, 26 e 27, 29 e 30.
 INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_inicio, data_ultima_visualizacao, minuto_parada, concluido, dispositivo) VALUES (1, 10, 6, '2026-10-18 08:55:00', '2026-10-18 11:13:00', 55, 1, 'Notebook');
 INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_inicio, data_ultima_visualizacao, minuto_parada, concluido, dispositivo) VALUES (2, 21, 16, '2026-08-11 18:32:00', '2026-08-11 23:56:00', 153, 0, 'Tablet');
 INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_inicio, data_ultima_visualizacao, minuto_parada, concluido, dispositivo) VALUES (3, 11, 18, '2026-09-24 05:44:00', '2026-09-24 12:57:00', 130, 1, 'Console');
@@ -760,7 +681,6 @@ INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_
 -- CONSULTA 01 - INNER JOIN - 2 tabelas
 -- Lista o e-mail, o país, o nome do plano e o valor mensal
 -- de todas as contas ATIVAS, em ordem de e-mail.
--- Tabelas: conta, plano
 -- ----------------------------------------------------------
 SELECT C.email, C.pais, P.nome AS plano, P.valor_mensal
 FROM conta C
@@ -772,7 +692,6 @@ ORDER BY C.email;
 -- CONSULTA 02 - INNER JOIN - 3 tabelas
 -- Mostra cada perfil com o e-mail da conta e o plano contratado,
 -- apenas dos perfis infantis.
--- Tabelas: perfil, conta, plano
 -- ----------------------------------------------------------
 SELECT PF.nome AS perfil, C.email, P.nome AS plano, P.telas_simultaneas
 FROM perfil PF
@@ -786,8 +705,6 @@ ORDER BY C.email;
 -- Relatório do que foi assistido ATÉ O FIM: perfil, e-mail da
 -- conta, plano, título, tipo, categoria principal, dispositivo
 -- e data de início formatada.
--- Tabelas: historico_visualizacao, perfil, conta, plano,
---          titulo, titulo_categoria, categoria
 -- ----------------------------------------------------------
 SELECT PF.nome                              AS perfil,
        C.email                              AS conta,
@@ -807,15 +724,10 @@ INNER JOIN categoria        CA ON CA.id_categoria = TC.id_categoria
 WHERE H.concluido = 1
   AND TC.categoria_principal = 1
 ORDER BY H.data_inicio;
--- Comentário: sem o filtro categoria_principal = 1, cada
--- visualização apareceria repetida, uma vez por categoria do título.
 
 -- ----------------------------------------------------------
 -- CONSULTA 04 - LEFT JOIN - 2 tabelas
 -- Lista os títulos que NUNCA foram assistidos.
--- O LEFT JOIN mantém todos os títulos; os que não têm histórico
--- ficam com NULL, e o WHERE seleciona exatamente esses.
--- Tabelas: titulo, historico_visualizacao
 -- ----------------------------------------------------------
 SELECT T.id_titulo, T.nome, T.tipo, T.ano_lancamento
 FROM titulo T
@@ -827,7 +739,6 @@ ORDER BY T.nome;
 -- CONSULTA 05 - LEFT JOIN - 3 tabelas (com agrupamento)
 -- Para CADA conta, mostra o e-mail, o plano e a quantidade de
 -- perfis. Contas sem perfil aparecem com 0.
--- Tabelas: conta, plano, perfil
 -- ----------------------------------------------------------
 SELECT C.email,
        P.nome            AS plano,
@@ -837,28 +748,22 @@ INNER JOIN plano  P  ON P.id_plano  = C.id_plano
 LEFT  JOIN perfil PF ON PF.id_conta = C.id_conta
 GROUP BY C.id_conta, C.email, P.nome
 ORDER BY qtd_perfis DESC, C.email;
--- Comentário: COUNT(PF.id_perfil) conta só valores não nulos.
--- COUNT(*) daria 1 para as contas sem perfil.
 
 -- ----------------------------------------------------------
 -- CONSULTA 06 - RIGHT JOIN - 2 tabelas
 -- Lista TODAS as temporadas com seus episódios. As temporadas
 -- que ainda não têm episódio também aparecem (com NULL).
--- Tabelas: episodio, temporada (nesta ordem no FROM)
 -- ----------------------------------------------------------
 SELECT TE.id_temporada, TE.numero_temporada, E.numero_episodio, E.titulo_episodio
 FROM episodio E
 RIGHT JOIN temporada TE ON TE.id_temporada = E.id_temporada
 ORDER BY TE.id_temporada, E.numero_episodio;
--- Comentário: temporada está à DIREITA, então todas as temporadas
--- são preservadas. É o LEFT JOIN "espelhado".
 
 -- ----------------------------------------------------------
 -- CONSULTA 07 - RIGHT JOIN - 3 tabelas (com agrupamento)
 -- Mostra TODOS os perfis, o e-mail da conta, a quantidade de
 -- títulos assistidos e o total de minutos. Perfis que nunca
 -- assistiram a nada aparecem com 0.
--- Tabelas: historico_visualizacao, perfil, conta
 -- ----------------------------------------------------------
 SELECT PF.nome                         AS perfil,
        C.email,
@@ -869,14 +774,12 @@ RIGHT JOIN perfil PF ON PF.id_perfil = H.id_perfil
 INNER JOIN conta  C  ON C.id_conta   = PF.id_conta
 GROUP BY PF.id_perfil, PF.nome, C.email
 ORDER BY minutos_assistidos DESC;
--- Comentário: COALESCE troca o NULL da soma por 0.
 
 -- ----------------------------------------------------------
 -- CONSULTA 08 - SELF JOIN
 -- Lista os pares de títulos do MESMO tipo lançados no MESMO ano.
 -- Cada par aparece uma única vez e um título não forma par
 -- com ele mesmo.
--- Tabela: titulo (unida com ela mesma)
 -- ----------------------------------------------------------
 SELECT A.nome AS titulo_1, B.nome AS titulo_2, A.tipo, A.ano_lancamento
 FROM titulo A
@@ -885,13 +788,10 @@ INNER JOIN titulo B
        AND A.ano_lancamento = B.ano_lancamento
        AND A.id_titulo < B.id_titulo
 ORDER BY A.ano_lancamento, A.nome;
--- Comentário: A.id_titulo < B.id_titulo evita o título pareado com
--- ele mesmo e os pares repetidos invertidos.
 
 -- ----------------------------------------------------------
 -- CONSULTA 09 - GROUP BY com HAVING
 -- Categorias que têm 4 ou mais títulos, da maior para a menor.
--- Tabelas: categoria, titulo_categoria
 -- ----------------------------------------------------------
 SELECT CA.nome AS categoria, COUNT(*) AS qtd_titulos
 FROM categoria CA
@@ -899,14 +799,11 @@ INNER JOIN titulo_categoria TC ON TC.id_categoria = CA.id_categoria
 GROUP BY CA.id_categoria, CA.nome
 HAVING COUNT(*) >= 4
 ORDER BY qtd_titulos DESC, CA.nome;
--- Comentário: WHERE filtra linhas antes de agrupar;
--- HAVING filtra os grupos depois do agrupamento.
 
 -- ----------------------------------------------------------
 -- CONSULTA 10 - Filtros (WHERE com AND, OR, LIKE e IS NULL)
 -- Contas do Brasil que precisam de atenção do atendimento:
 -- estão suspensas, canceladas ou não têm telefone cadastrado.
--- Tabela: conta
 -- ----------------------------------------------------------
 SELECT id_conta, email, telefone, status
 FROM conta
@@ -919,7 +816,6 @@ ORDER BY status, email;
 -- CONSULTA 11 - Os 5 títulos mais assistidos
 -- Agrupa o histórico por título, ordena pela quantidade e
 -- limita o resultado.
--- Tabelas: titulo, historico_visualizacao
 -- ----------------------------------------------------------
 SELECT T.nome AS titulo, T.tipo, COUNT(*) AS visualizacoes
 FROM titulo T
@@ -932,7 +828,6 @@ LIMIT 5;
 -- CONSULTA 12 - Receita mensal por plano
 -- Soma o valor mensal das contas ATIVAS de cada plano e mostra
 -- apenas os planos com receita acima de R$ 100,00.
--- Tabelas: plano, conta
 -- ----------------------------------------------------------
 SELECT P.nome                AS plano,
        COUNT(C.id_conta)     AS contas_ativas,
@@ -984,8 +879,6 @@ ORDER BY data_inicio;
 -- ==========================================================
 -- PARTE 5 - STORED PROCEDURES (scripts adicionais)
 -- ----------------------------------------------------------
--- Uma procedure guarda um bloco de comandos no banco para ser
--- executado com CALL.
 -- ==========================================================
 
 -- 1) Procedure sem parâmetro - Relatório de contas por plano
@@ -1039,13 +932,9 @@ CALL sp_alterar_status_conta(2, 'Ativa');
 -- ==========================================================
 -- PARTE 6 - VIEWS
 -- ----------------------------------------------------------
--- Uma VIEW é uma tabela virtual: ela guarda uma consulta
--- (SELECT) com um nome. Os dados continuam nas tabelas
--- originais; a view só mostra o resultado.
 -- ==========================================================
 
 -- VIEW 1 - Contas ativas com o plano
--- Mostra os dados da conta SEM a senha (senha_hash fica de fora).
 CREATE VIEW vw_contas_ativas AS
 SELECT C.id_conta, C.email, C.pais, C.data_cadastro,
        P.nome AS plano, P.valor_mensal, P.qualidade_maxima
@@ -1053,11 +942,9 @@ FROM conta C
 INNER JOIN plano P ON P.id_plano = C.id_plano
 WHERE C.status = 'Ativa';
 
--- Usando a view como se fosse uma tabela:
 SELECT * FROM vw_contas_ativas ORDER BY email;
 
 -- VIEW 2 - Catálogo com a categoria principal
--- LEFT JOIN para os títulos sem categoria também aparecerem.
 CREATE VIEW vw_catalogo AS
 SELECT T.id_titulo, T.nome, T.tipo, T.ano_lancamento,
        T.classificacao_indicativa, CA.nome AS categoria_principal
@@ -1083,8 +970,6 @@ SELECT * FROM vw_ranking_titulos ORDER BY visualizacoes DESC LIMIT 10;
 -- ==========================================================
 -- PARTE 7 - TRIGGERS
 -- ----------------------------------------------------------
--- Cada exemplo tem: a regra, a criação da trigger, o comando
--- que a dispara e um SELECT para conferir o resultado.
 -- ==========================================================
 
 -- ==========================================================
@@ -1100,15 +985,10 @@ DROP TRIGGER IF EXISTS tg_validar_minuto_parada;
 
 DELIMITER //
 CREATE TRIGGER tg_validar_minuto_parada
--- BEFORE executa antes da gravação no banco,
--- permitindo alterar ou validar valores
 BEFORE INSERT ON historico_visualizacao
--- Executa para cada registro inserido
 FOR EACH ROW
 BEGIN
-    -- NEW representa o registro que está tentando ser inserido
     IF NEW.minuto_parada < 0 THEN
-        -- Altera o valor antes da gravação
         SET NEW.minuto_parada = 0;
     END IF;
 END //
@@ -1170,9 +1050,6 @@ WHERE id_conta = 5;
 --
 -- Tipo:
 -- BEFORE UPDATE
---
--- No UPDATE existem OLD e NEW ao mesmo tempo:
--- OLD é o valor antigo e NEW é o valor novo.
 -- ==========================================================
 DROP TRIGGER IF EXISTS tg_validar_valor_plano;
 
@@ -1204,14 +1081,12 @@ WHERE id_plano = 1;
 -- PARTE 8 - USUÁRIOS E PERMISSÕES (GRANT E REVOKE)
 -- ----------------------------------------------------------
 -- Cada usuário tem uma função diferente:
---
 -- admin_netflix:  acesso total ao banco
 -- analista:       apenas consulta dados (relatórios)
 -- atendente:      consulta contas e perfis e altera o status
 --                 da conta
 -- catalogo:       cadastra e consulta títulos
 -- financeiro:     consulta planos e algumas colunas da cobrança
---
 -- Observação: senhas de exemplo, apenas para a atividade.
 -- ==========================================================
 
@@ -1244,13 +1119,11 @@ ON netflix.*
 TO 'admin_netflix'@'localhost';
 
 -- EXEMPLO 2 - Somente consulta no banco inteiro
--- O analista pode visualizar informações, mas não altera nada.
 GRANT SELECT
 ON netflix.*
 TO 'analista'@'localhost';
 
 -- EXEMPLO 3 - Consulta em tabelas específicas
--- O atendente consulta contas e perfis.
 GRANT SELECT
 ON netflix.conta
 TO 'atendente'@'localhost';
@@ -1260,14 +1133,11 @@ ON netflix.perfil
 TO 'atendente'@'localhost';
 
 -- EXEMPLO 4 - UPDATE limitado a uma coluna
--- O atendente pode alterar apenas o status da conta
--- (não altera e-mail, senha ou plano).
 GRANT UPDATE (status)
 ON netflix.conta
 TO 'atendente'@'localhost';
 
 -- EXEMPLO 5 - INSERT em uma tabela
--- O setor de catálogo cadastra e consulta títulos.
 GRANT INSERT
 ON netflix.titulo
 TO 'catalogo'@'localhost';
@@ -1277,8 +1147,6 @@ ON netflix.titulo
 TO 'catalogo'@'localhost';
 
 -- EXEMPLO 6 - Leitura apenas de algumas colunas
--- O financeiro vê a forma de pagamento e o vencimento,
--- mas não vê os dígitos do cartão.
 GRANT SELECT
 (
 id_cobranca,
@@ -1307,14 +1175,11 @@ SHOW GRANTS FOR 'financeiro'@'localhost';
 -- ----------------------------------------------------------
 
 -- EXEMPLO 7 - Remover uma permissão específica
--- O catálogo não poderá mais inserir títulos,
--- mas continua podendo consultar.
 REVOKE INSERT
 ON netflix.titulo
 FROM 'catalogo'@'localhost';
 
 -- EXEMPLO 8 - Remover acesso a uma coluna específica
--- O atendente deixa de alterar o status da conta.
 REVOKE UPDATE (status)
 ON netflix.conta
 FROM 'atendente'@'localhost';
@@ -1327,10 +1192,6 @@ SHOW GRANTS FOR 'atendente'@'localhost';
 -- ==========================================================
 -- PARTE 9 - TRANSAÇÕES (COMMIT, ROLLBACK E SAVEPOINT)
 -- ----------------------------------------------------------
--- START TRANSACTION inicia uma transação
--- COMMIT salva definitivamente
--- ROLLBACK desfaz alterações ainda não confirmadas
--- SAVEPOINT permite desfazer apenas uma parte
 -- ==========================================================
 
 -- ----------------------------------------------------------
@@ -1346,10 +1207,8 @@ VALUES (31, 'A Estreia da Semana', 'Filme adicionado dentro de uma transação.'
 INSERT INTO titulo_categoria (id_titulo, id_categoria, categoria_principal, ordem_exibicao, data_associacao)
 VALUES (31, 8, 1, 1, '2026-11-16');
 
--- Visualiza o título antes da confirmação
 SELECT id_titulo, nome, tipo FROM titulo WHERE id_titulo = 31;
 
--- COMMIT confirma a operação
 COMMIT;
 
 -- ----------------------------------------------------------
@@ -1366,7 +1225,6 @@ WHERE id_plano = 5;
 -- Conferindo antes de confirmar: o valor está errado (559.00)
 SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;
 
--- ROLLBACK desfaz tudo desde o START TRANSACTION
 ROLLBACK;
 
 -- Conferência: o valor voltou para 55.90
@@ -1383,13 +1241,10 @@ START TRANSACTION;
 DELETE FROM conta
 WHERE id_conta = 2;
 
--- A conta e os perfis sumiram (temporariamente)
 SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
 
--- Usuário percebeu que apagou a conta errada
 ROLLBACK;
 
--- A conta e os perfis voltam a existir
 SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
 
 -- ----------------------------------------------------------
@@ -1398,25 +1253,18 @@ SELECT COUNT(*) AS perfis_da_conta_2 FROM perfil WHERE id_conta = 2;
 -- ----------------------------------------------------------
 START TRANSACTION;
 
--- Primeira alteração: reajuste de 10% no plano Premium
 UPDATE plano
 SET valor_mensal = valor_mensal * 1.10
 WHERE id_plano = 5;
 
--- Criando um ponto de retorno
 SAVEPOINT ajuste_preco;
 
--- Segunda alteração: mudança no número de telas
 UPDATE plano
 SET telas_simultaneas = 1
 WHERE id_plano = 5;
 
--- A alteração de telas estava errada:
--- volta apenas até o SAVEPOINT
 ROLLBACK TO ajuste_preco;
 
--- O reajuste de preço continua mantido
--- A alteração de telas foi desfeita
 COMMIT;
 
 -- Conferência: valor reajustado (61.49) e telas = 4

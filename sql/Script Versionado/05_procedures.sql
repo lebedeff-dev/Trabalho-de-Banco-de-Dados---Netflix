@@ -1,11 +1,7 @@
 -- ==========================================================
 -- BANCO DE DADOS NETFLIX - ARQUIVO 05 DE 09
--- Stored procedures
 -- Critério da atividade: Scripts adicionais e índices
---
 -- Pré-requisito: executar antes os arquivos 01 a 04, nesta ordem.
--- Este arquivo é a PARTE 5 do script completo (sql/netflix_bd.sql),
--- separada para facilitar a leitura e a apresentação.
 -- ==========================================================
 
 USE NETFLIX;
@@ -13,8 +9,6 @@ USE NETFLIX;
 -- ==========================================================
 -- PARTE 5 - STORED PROCEDURES (scripts adicionais)
 -- ----------------------------------------------------------
--- Uma procedure guarda um bloco de comandos no banco para ser
--- executado com CALL.
 -- ==========================================================
 
 -- 1) Procedure sem parâmetro - Relatório de contas por plano
