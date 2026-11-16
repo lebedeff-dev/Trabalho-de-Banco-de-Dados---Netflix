@@ -24,7 +24,7 @@
 - [x] Vault criado
 - [x] Repositório Git ligado e 1º commit (push feito)
 - [x] `sql/netflix_bd.sql` — Parte 1: estrutura (testada em MySQL 8). Explicação: [[Parte 1 - Estrutura (explicacao)]]
-- [ ] Inserts (30+ por tabela)
+- [x] Parte 2: inserts (712 comandos, 30+ por tabela, testada). Explicação: [[Parte 2 - Inserts (explicacao)]]
 - [ ] Consultas
 - [ ] Índice + justificativa
 - [ ] Views, triggers, usuários, transação

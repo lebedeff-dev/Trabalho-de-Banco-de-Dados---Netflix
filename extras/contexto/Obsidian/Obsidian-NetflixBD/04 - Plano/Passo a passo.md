@@ -4,7 +4,7 @@ Um arquivo só, na ordem abaixo. Estilo em [[Padroes dos scripts da professora]]
 
 - [x] **1. Banco**: `DROP DATABASE IF EXISTS`, `CREATE DATABASE` (utf8mb4), `USE` (feito, ver [[Parte 1 - Estrutura (explicacao)]])
 - [x] **2. Tabelas** (feito e testado): 13 `CREATE TABLE` na ordem de [[Modelo logico Netflix]]. Escritas à mão no estilo de `bd_supermercado.sql`, **fiéis ao modelo aprovado** (mesmos campos, tipos, PK/FK, UNIQUE e ON DELETE/UPDATE do `.mwb`)
-- [ ] **3. Inserts**: 30+ por tabela (13 tabelas, ~400 linhas), mesma ordem do passo 2. Pensar os dados para que LEFT/RIGHT JOIN tenham casos sem correspondência
+- [x] **3. Inserts** (feito e testado, ver [[Parte 2 - Inserts (explicacao)]]): 30+ por tabela (13 tabelas, ~400 linhas), mesma ordem do passo 2. Pensar os dados para que LEFT/RIGHT JOIN tenham casos sem correspondência
 - [ ] **4. Consultas**: INNER/LEFT/RIGHT/SELF JOIN, WHERE, GROUP BY, HAVING, ORDER BY, LIMIT
 - [ ] **5. Índice** + comentário de justificativa (ver lacuna em [[Mapa dos materiais]])
 - [ ] **6. Views** (ver lacuna)
