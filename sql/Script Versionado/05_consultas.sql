@@ -12,8 +12,7 @@ USE NETFLIX;
 
 -- ----------------------------------------------------------
 -- CONSULTA 01 - Simples (1 tabela: conta)
--- Contas do Brasil que precisam de atenção do atendimento:
--- estão suspensas, canceladas ou não têm telefone cadastrado.
+-- Contas do Brasil suspensas, canceladas ou sem telefone.
 -- ----------------------------------------------------------
 SELECT id_conta, email, telefone, status
 FROM conta
@@ -24,8 +23,8 @@ ORDER BY status, email;
 
 -- ----------------------------------------------------------
 -- CONSULTA 02 - Simples (1 tabela: titulo)
--- Quantidade de títulos disponíveis por tipo e o intervalo de
--- anos de lançamento. Só aparecem os tipos com 2 ou mais títulos.
+-- Títulos disponíveis por tipo, com o primeiro e o último ano de
+-- lançamento. Só tipos com 2 ou mais títulos.
 -- ----------------------------------------------------------
 SELECT tipo,
        COUNT(*)            AS qtd_titulos,
@@ -40,8 +39,7 @@ ORDER BY qtd_titulos DESC;
 
 -- ----------------------------------------------------------
 -- CONSULTA 03 - INNER JOIN (2 tabelas: conta e plano)
--- E-mail, país, plano e valor das contas ATIVAS, em ordem de
--- e-mail.
+-- Contas ativas com plano e valor.
 -- ----------------------------------------------------------
 SELECT C.email, C.pais, P.nome AS plano, P.valor_mensal
 FROM conta C
@@ -51,8 +49,8 @@ ORDER BY C.email;
 
 -- ----------------------------------------------------------
 -- CONSULTA 04 - INNER JOIN (2 tabelas: plano e conta)
--- Receita mensal por plano: soma o valor das contas ATIVAS e
--- mostra apenas os planos com receita acima de R$ 100,00.
+-- Receita mensal por plano (só contas ativas). Só planos acima
+-- de R$ 100,00.
 -- ----------------------------------------------------------
 SELECT P.nome              AS plano,
        COUNT(C.id_conta)   AS contas_ativas,
@@ -66,7 +64,7 @@ ORDER BY receita_mensal DESC;
 
 -- ----------------------------------------------------------
 -- CONSULTA 05 - INNER JOIN (2 tabelas: categoria e titulo_categoria)
--- Categorias que têm 4 ou mais títulos, da maior para a menor.
+-- Categorias com 4 ou mais títulos.
 -- ----------------------------------------------------------
 SELECT CA.nome AS categoria, COUNT(*) AS qtd_titulos
 FROM categoria CA
@@ -88,7 +86,7 @@ LIMIT 5;
 
 -- ----------------------------------------------------------
 -- CONSULTA 07 - LEFT JOIN (2 tabelas: titulo e historico_visualizacao)
--- Títulos que NUNCA foram assistidos.
+-- Títulos que nunca foram assistidos.
 -- ----------------------------------------------------------
 SELECT T.id_titulo, T.nome, T.tipo, T.ano_lancamento
 FROM titulo T
@@ -98,8 +96,7 @@ ORDER BY T.nome;
 
 -- ----------------------------------------------------------
 -- CONSULTA 08 - RIGHT JOIN (2 tabelas: episodio e temporada)
--- Quantidade de episódios de CADA temporada. As temporadas que
--- ainda não têm episódio também aparecem (com 0).
+-- Episódios por temporada. Temporada sem episódio aparece com 0.
 -- ----------------------------------------------------------
 SELECT TE.id_temporada,
        TE.numero_temporada,
@@ -111,8 +108,7 @@ ORDER BY qtd_episodios DESC, TE.id_temporada;
 
 -- ----------------------------------------------------------
 -- CONSULTA 09 - 3 tabelas (INNER JOIN e LEFT JOIN: conta, plano e perfil)
--- Para CADA conta: e-mail, plano e quantidade de perfis. As
--- contas sem perfil aparecem com 0.
+-- Perfis por conta. Conta sem perfil aparece com 0.
 -- ----------------------------------------------------------
 SELECT C.email,
        P.nome              AS plano,
@@ -126,8 +122,8 @@ ORDER BY qtd_perfis DESC, C.email;
 -- ----------------------------------------------------------
 -- CONSULTA 10 - 4 tabelas (INNER JOIN: historico_visualizacao,
 -- perfil, conta e titulo)
--- Quantidade de títulos concluídos e soma da duração deles por
--- conta. Só aparecem as contas com 2 ou mais concluídos.
+-- Títulos concluídos por conta e a soma da duração deles. Só
+-- contas com 2 ou mais.
 -- ----------------------------------------------------------
 SELECT C.email,
        COUNT(*)               AS titulos_concluidos,

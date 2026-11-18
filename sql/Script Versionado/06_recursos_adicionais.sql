@@ -51,16 +51,14 @@ SELECT * FROM vw_ranking_titulos ORDER BY visualizacoes DESC LIMIT 10;
 -- ----------------------------------------------------------
 
 -- ==========================================================
--- TRIGGER 1
+-- TRIGGER 1 - renovação da assinatura
 -- Regra:
--- Renovar a assinatura é avançar a data_proxima_cobranca da
--- conta. Antes de gravar a nova data, validar:
---   a) a conta precisa estar ATIVA (conta suspensa ou
---      cancelada não renova);
---   b) a nova data precisa ser POSTERIOR à data atual;
---   c) a nova data precisa cair no dia de vencimento
---      combinado com o cliente (dia_vencimento).
--- Se alguma regra falhar, a renovação é recusada (SIGNAL).
+-- Renovar é avançar data_proxima_cobranca. Antes de gravar a data
+-- nova, a trigger confere:
+--   a) a conta está ativa;
+--   b) a data nova é posterior à atual;
+--   c) a data nova cai no dia de vencimento (dia_vencimento).
+-- Se alguma falhar, a renovação é recusada com SIGNAL.
 --
 -- Tipo:
 -- BEFORE UPDATE
@@ -75,27 +73,27 @@ BEGIN
     DECLARE v_status   VARCHAR(10);
     DECLARE v_mensagem VARCHAR(200);
 
-    -- Só valida quando a data da próxima cobrança foi alterada
+    -- Só valida se a data mudou
     IF NEW.data_proxima_cobranca <> OLD.data_proxima_cobranca THEN
 
-        -- Status atual da conta dona da cobrança
+        -- Status da conta dessa cobrança
         SELECT status INTO v_status
         FROM conta
         WHERE id_conta = NEW.id_conta;
 
-        -- a) conta precisa estar ativa
+        -- a) conta ativa
         IF v_status <> 'Ativa' THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'Conta suspensa ou cancelada nao pode renovar a assinatura.';
         END IF;
 
-        -- b) a data só pode avançar
+        -- b) a data só avança
         IF NEW.data_proxima_cobranca <= OLD.data_proxima_cobranca THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'A nova data de cobranca deve ser posterior a data atual.';
         END IF;
 
-        -- c) a data precisa cair no dia de vencimento
+        -- c) data no dia de vencimento
         IF DAY(NEW.data_proxima_cobranca) <> NEW.dia_vencimento THEN
             SET v_mensagem = CONCAT('A cobranca deve cair no dia de vencimento: dia ',
                                     NEW.dia_vencimento, '.');
@@ -106,50 +104,44 @@ BEGIN
 END //
 DELIMITER ;
 
--- Antes: a conta 2 (ativa) tem a próxima cobrança em 24/12/2026
+-- Antes: conta 2 (ativa) com próxima cobrança em 24/12/2026
 SELECT id_conta, nome_titular, dia_vencimento, data_proxima_cobranca
 FROM dados_cobranca
 WHERE id_conta = 2;
 
--- Caso permitido: renovação da conta 2 para 24/01/2027
+-- Renovação válida: conta 2 para 24/01/2027
 UPDATE dados_cobranca
 SET data_proxima_cobranca = '2027-01-24'
 WHERE id_conta = 2;
 
--- Conferindo: a data deve aparecer como 2027-01-24
+-- Depois: data_proxima_cobranca = 2027-01-24
 SELECT id_conta, nome_titular, dia_vencimento, data_proxima_cobranca
 FROM dados_cobranca
 WHERE id_conta = 2;
 
--- Casos bloqueados. Geram erro de propósito; tire o "-- " para testar.
+-- Casos bloqueados (dão erro de propósito; tire o "-- " para testar).
 
--- (a) a conta 7 está SUSPENSA
+-- (a) conta 7 suspensa
 -- UPDATE dados_cobranca SET data_proxima_cobranca = '2027-01-21' WHERE id_conta = 7;
--- Resultado esperado: Error Code 1644. Conta suspensa ou cancelada...
+-- Esperado: erro 1644, conta suspensa ou cancelada.
 
--- (b) a data volta no tempo
+-- (b) data anterior à atual
 -- UPDATE dados_cobranca SET data_proxima_cobranca = '2026-11-24' WHERE id_conta = 2;
--- Resultado esperado: Error Code 1644. A nova data de cobranca deve ser posterior...
+-- Esperado: erro 1644, data nova deve ser posterior à atual.
 
--- (c) a data não cai no dia de vencimento (dia 24)
+-- (c) fora do dia de vencimento (dia 24)
 -- UPDATE dados_cobranca SET data_proxima_cobranca = '2027-02-10' WHERE id_conta = 2;
--- Resultado esperado: Error Code 1644. A cobranca deve cair no dia de vencimento: dia 24.
+-- Esperado: erro 1644, cobrança deve cair no dia 24.
 
 -- ==========================================================
--- TRIGGER 2
+-- TRIGGER 2 - disponibilidade do título
 -- Regra:
--- Quando um título é marcado como indisponível (ou volta a ficar
--- disponível), as temporadas e os episódios dele acompanham.
--- Assim, ao tirar uma série do catálogo, nenhuma temporada ou
--- episódio dela continua aparecendo como disponível.
--- Se o campo disponivel não mudou (por exemplo, só o nome foi
--- alterado), nada é feito.
+-- Quando o campo disponivel de um título muda, as temporadas e os
+-- episódios dele recebem o mesmo valor. Se mudar só o nome, nada
+-- acontece.
 --
 -- Tipo:
--- AFTER UPDATE
---
--- A trigger é disparada pela tabela titulo e altera outras duas
--- tabelas (temporada e episodio).
+-- AFTER UPDATE (dispara em titulo e altera temporada e episodio)
 -- ==========================================================
 DROP TRIGGER IF EXISTS tg_propagar_disponibilidade;
 
@@ -165,7 +157,7 @@ BEGIN
         SET disponivel = NEW.disponivel
         WHERE id_titulo = NEW.id_titulo;
 
-        -- Episódios das temporadas desse título
+        -- Episódios dessas temporadas
         UPDATE episodio
         SET disponivel = NEW.disponivel
         WHERE id_temporada IN (SELECT id_temporada
@@ -175,8 +167,8 @@ BEGIN
 END //
 DELIMITER ;
 
--- Antes: a série 1 (Sombras da Capital) está disponível, com
--- 3 temporadas e 6 episódios
+-- Antes: série 1 (Sombras da Capital), 3 temporadas e 6 episódios,
+-- tudo disponível
 SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
        TE.disponivel AS temporada,
        COUNT(E.id_episodio) AS episodios,
@@ -188,12 +180,12 @@ WHERE T.id_titulo = 1
 GROUP BY T.nome, T.disponivel, TE.numero_temporada, TE.disponivel
 ORDER BY TE.numero_temporada;
 
--- Comando que dispara a trigger: a série 1 sai do catálogo
+-- Dispara a trigger: a série 1 sai do catálogo
 UPDATE titulo
 SET disponivel = 0
 WHERE id_titulo = 1;
 
--- Conferindo: título, temporadas e episódios aparecem com 0
+-- Depois: título, temporadas e episódios em 0
 SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
        TE.disponivel AS temporada,
        COUNT(E.id_episodio) AS episodios,
@@ -205,12 +197,12 @@ WHERE T.id_titulo = 1
 GROUP BY T.nome, T.disponivel, TE.numero_temporada, TE.disponivel
 ORDER BY TE.numero_temporada;
 
--- A série 1 volta ao catálogo e tudo volta a ficar disponível
+-- A série 1 volta ao catálogo
 UPDATE titulo
 SET disponivel = 1
 WHERE id_titulo = 1;
 
--- Conferindo: tudo volta a 1
+-- Depois: tudo em 1
 SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
        TE.disponivel AS temporada,
        COUNT(E.id_episodio) AS episodios,
@@ -226,12 +218,12 @@ ORDER BY TE.numero_temporada;
 -- USUÁRIOS E PERMISSÕES
 -- ----------------------------------------------------------
 -- admin_netflix: acesso total ao banco
--- analista:      apenas consulta dados (relatórios)
--- atendente:     consulta contas e perfis e altera o status da conta
--- Observação: senhas de exemplo, apenas para a atividade.
+-- analista:      só consulta
+-- atendente:     consulta conta e perfil e altera o status da conta
+-- As senhas são de exemplo, só para a atividade.
 
--- Remove os usuários, se já existirem (permite executar o
--- script mais de uma vez)
+-- Remove os usuários se já existirem (o script pode rodar mais
+-- de uma vez)
 DROP USER IF EXISTS 'admin_netflix'@'localhost';
 DROP USER IF EXISTS 'analista'@'localhost';
 DROP USER IF EXISTS 'atendente'@'localhost';
@@ -255,17 +247,17 @@ SHOW GRANTS FOR 'admin_netflix'@'localhost';
 SHOW GRANTS FOR 'analista'@'localhost';
 SHOW GRANTS FOR 'atendente'@'localhost';
 
--- Exclusão de um dos usuários criados
+-- Exclusão de um usuário
 DROP USER 'analista'@'localhost';
 
 -- Revogação de privilégios de dois usuários
--- admin_netflix deixa de poder apagar dados e objetos
+-- admin_netflix perde DELETE e DROP
 REVOKE DELETE, DROP ON netflix.* FROM 'admin_netflix'@'localhost';
 
--- atendente deixa de poder alterar o status da conta
+-- atendente perde o UPDATE em status
 REVOKE UPDATE (status) ON netflix.conta FROM 'atendente'@'localhost';
 
--- Conferindo novamente
+-- Permissões depois do REVOKE
 SHOW GRANTS FOR 'admin_netflix'@'localhost';
 SHOW GRANTS FOR 'atendente'@'localhost';
 
@@ -274,8 +266,7 @@ SHOW GRANTS FOR 'atendente'@'localhost';
 -- ----------------------------------------------------------
 
 -- Exemplo de COMMIT
--- Cadastro de um novo título junto com a sua categoria.
--- As duas operações devem acontecer juntas.
+-- Título novo e a categoria dele, gravados na mesma transação.
 START TRANSACTION;
 
 INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo)
@@ -286,22 +277,21 @@ VALUES (31, 8, 1, 1, '2026-11-16');
 
 COMMIT;
 
--- Conferência: o título 31 foi gravado
+-- Título 31 gravado
 SELECT id_titulo, nome, tipo FROM titulo WHERE id_titulo = 31;
 
 -- Exemplo de ROLLBACK
--- Um reajuste de preço aplicado errado (multiplicou por 10)
--- é desfeito.
+-- Reajuste de preço errado (x10), desfeito.
 START TRANSACTION;
 
 UPDATE plano
 SET valor_mensal = valor_mensal * 10
 WHERE id_plano = 5;
 
--- Antes de confirmar: o valor está errado (559.00)
+-- Antes do ROLLBACK: 559.00
 SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;
 
 ROLLBACK;
 
--- Conferência: o valor voltou para 55.90
+-- Depois do ROLLBACK: 55.90
 SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;

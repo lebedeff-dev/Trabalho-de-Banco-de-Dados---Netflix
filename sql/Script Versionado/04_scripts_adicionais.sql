@@ -9,24 +9,24 @@ USE NETFLIX;
 -- ==========================================================
 -- 4. SCRIPTS ADICIONAIS (comentados)
 -- ----------------------------------------------------------
--- Exemplos de domínio técnico. Estão comentados para não
--- alterar o banco; para demonstrar, tire o "-- " do comando.
+-- Comandos comentados para não alterar o banco. Para rodar um,
+-- tire o "-- " da frente.
 -- ==========================================================
 
--- Exclusão do banco de dados
+-- Excluir o banco
 -- DROP DATABASE NETFLIX;
 
--- Exclusão de uma tabela
+-- Excluir uma tabela
 -- DROP TABLE configuracao_perfil;
 
--- Exclusão de uma coluna de uma tabela
+-- Excluir uma coluna
 -- ALTER TABLE pessoa DROP COLUMN biografia;
 
--- Adição de uma nova coluna (não prevista na modelagem inicial)
+-- Adicionar uma coluna (não existe na modelagem)
 -- ALTER TABLE pessoa ADD COLUMN email_contato VARCHAR(120);
 
--- Edição de um registro específico
+-- Editar um registro
 -- UPDATE conta SET telefone = '(61) 99999-0000' WHERE id_conta = 1;
 
--- Exclusão de um registro específico
+-- Excluir um registro
 -- DELETE FROM participacao WHERE id_participacao = 30;

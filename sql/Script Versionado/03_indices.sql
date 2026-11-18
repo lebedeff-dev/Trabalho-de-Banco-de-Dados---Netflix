@@ -9,24 +9,18 @@ USE NETFLIX;
 -- ==========================================================
 -- 3. ÍNDICES
 -- ----------------------------------------------------------
--- Chaves primárias, chaves estrangeiras e campos UNIQUE já têm
--- índice automático no MySQL. Os índices abaixo são em campos
--- que NÃO são chave, mas são muito usados em buscas.
+-- PK, FK e UNIQUE já ganham índice no MySQL. Os dois índices
+-- abaixo são em campos que não são chave.
 -- ==========================================================
 
--- ÍNDICE 1 - nome do título
--- Justificativa: a busca por nome é a pesquisa mais comum em um
--- catálogo de streaming (o usuário digita o nome do filme ou da
--- série). O campo nome não é chave nem UNIQUE, então não tinha
--- índice. Com o índice, o MySQL localiza o título sem ler a
--- tabela inteira, e a tabela titulo é a que mais cresce.
+-- ÍNDICE 1 - titulo.nome
+-- Justificativa: o nome é o campo mais pesquisado do catálogo e não
+-- tinha índice, porque não é chave nem UNIQUE. Com o índice, a busca
+-- por nome não lê a tabela inteira.
 CREATE INDEX idx_titulo_nome ON titulo (nome);
 
--- ÍNDICE 2 - data de início da visualização
--- Justificativa: historico_visualizacao é a tabela que mais
--- recebe registros (cada vez que alguém assiste a algo) e os
--- relatórios costumam ser por período ("o que foi assistido em
--- outubro"). O campo data_inicio é usado no WHERE e no ORDER BY
--- desses relatórios e não tinha índice. Com ele, o filtro por
--- período não precisa percorrer todo o histórico.
+-- ÍNDICE 2 - historico_visualizacao.data_inicio
+-- Justificativa: o histórico é a tabela que mais cresce e os
+-- relatórios filtram por período (WHERE e ORDER BY em data_inicio).
+-- Com o índice, o filtro não percorre todas as linhas.
 CREATE INDEX idx_historico_data_inicio ON historico_visualizacao (data_inicio);

@@ -21,7 +21,7 @@ USE NETFLIX;
 -- GRUPO 1 - TABELAS SEM CHAVE ESTRANGEIRA
 -- ==========================================================
 
--- PLANO: planos de assinatura oferecidos
+-- PLANO: planos de assinatura
 CREATE TABLE IF NOT EXISTS plano (
     id_plano          INT PRIMARY KEY AUTO_INCREMENT,
     nome              VARCHAR(40)   NOT NULL UNIQUE,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS plano (
     data_criacao      DATE          NOT NULL
 );
 
--- CATEGORIA: gêneros do catálogo (Ação, Drama, Comédia...)
+-- CATEGORIA: gêneros do catálogo
 CREATE TABLE IF NOT EXISTS categoria (
     id_categoria    INT PRIMARY KEY AUTO_INCREMENT,
     nome            VARCHAR(50) NOT NULL UNIQUE,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS categoria (
     data_criacao    DATE        NOT NULL
 );
 
--- PESSOA: atores, diretores, roteiristas etc.
+-- PESSOA: atores, diretores e roteiristas
 CREATE TABLE IF NOT EXISTS pessoa (
     id_pessoa       INT PRIMARY KEY AUTO_INCREMENT,
     nome            VARCHAR(100) NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS pessoa (
     em_atividade    TINYINT(1)   NOT NULL DEFAULT 1
 );
 
--- TITULO: filmes, séries, documentários e stand-ups do catálogo
+-- TITULO: filmes, séries, documentários e stand-ups
 CREATE TABLE IF NOT EXISTS titulo (
     id_titulo                INT PRIMARY KEY AUTO_INCREMENT,
     nome                     VARCHAR(150) NOT NULL,
@@ -73,8 +73,8 @@ CREATE TABLE IF NOT EXISTS titulo (
 -- GRUPO 2 - TABELAS QUE DEPENDEM DO GRUPO 1
 -- ==========================================================
 
--- CONTA: conta de assinatura (cada conta tem UM plano)
--- Relacionamento 1:N -> plano (1) x conta (N)
+-- CONTA: conta de assinatura, com um plano
+-- 1:N com plano
 CREATE TABLE IF NOT EXISTS conta (
     id_conta      INT PRIMARY KEY AUTO_INCREMENT,
     id_plano      INT          NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS conta (
 );
 
 -- TEMPORADA: temporadas de uma série
--- Relacionamento 1:N -> titulo (1) x temporada (N)
+-- 1:N com titulo
 CREATE TABLE IF NOT EXISTS temporada (
     id_temporada     INT PRIMARY KEY AUTO_INCREMENT,
     id_titulo        INT        NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS temporada (
 -- ==========================================================
 
 -- DADOS_COBRANCA: forma de pagamento da conta
--- Relacionamento 1:1 com conta (UNIQUE em id_conta)
+-- 1:1 com conta (UNIQUE em id_conta)
 CREATE TABLE IF NOT EXISTS dados_cobranca (
     id_cobranca            INT PRIMARY KEY AUTO_INCREMENT,
     id_conta               INT          NOT NULL UNIQUE,
@@ -127,8 +127,8 @@ CREATE TABLE IF NOT EXISTS dados_cobranca (
     ON UPDATE CASCADE
 );
 
--- PERFIL: perfis de uma conta (ex.: Pai, Mãe, Crianças)
--- Relacionamento 1:N -> conta (1) x perfil (N)
+-- PERFIL: perfis de uma conta
+-- 1:N com conta
 CREATE TABLE IF NOT EXISTS perfil (
     id_perfil       INT PRIMARY KEY AUTO_INCREMENT,
     id_conta        INT         NOT NULL,
@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS perfil (
 );
 
 -- EPISODIO: episódios de uma temporada
--- Relacionamento 1:N -> temporada (1) x episodio (N)
+-- 1:N com temporada
 CREATE TABLE IF NOT EXISTS episodio (
     id_episodio     INT PRIMARY KEY AUTO_INCREMENT,
     id_temporada    INT          NOT NULL,
@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS episodio (
 -- ==========================================================
 
 -- CONFIGURACAO_PERFIL: preferências de um perfil
--- Relacionamento 1:1 com perfil (UNIQUE em id_perfil)
+-- 1:1 com perfil (UNIQUE em id_perfil)
 CREATE TABLE IF NOT EXISTS configuracao_perfil (
     id_configuracao       INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil             INT         NOT NULL UNIQUE,

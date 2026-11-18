@@ -29,7 +29,7 @@ USE NETFLIX;
 -- GRUPO 1 - TABELAS SEM CHAVE ESTRANGEIRA
 -- ==========================================================
 
--- PLANO: planos de assinatura oferecidos
+-- PLANO: planos de assinatura
 CREATE TABLE IF NOT EXISTS plano (
     id_plano          INT PRIMARY KEY AUTO_INCREMENT,
     nome              VARCHAR(40)   NOT NULL UNIQUE,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS plano (
     data_criacao      DATE          NOT NULL
 );
 
--- CATEGORIA: gêneros do catálogo (Ação, Drama, Comédia...)
+-- CATEGORIA: gêneros do catálogo
 CREATE TABLE IF NOT EXISTS categoria (
     id_categoria    INT PRIMARY KEY AUTO_INCREMENT,
     nome            VARCHAR(50) NOT NULL UNIQUE,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS categoria (
     data_criacao    DATE        NOT NULL
 );
 
--- PESSOA: atores, diretores, roteiristas etc.
+-- PESSOA: atores, diretores e roteiristas
 CREATE TABLE IF NOT EXISTS pessoa (
     id_pessoa       INT PRIMARY KEY AUTO_INCREMENT,
     nome            VARCHAR(100) NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS pessoa (
     em_atividade    TINYINT(1)   NOT NULL DEFAULT 1
 );
 
--- TITULO: filmes, séries, documentários e stand-ups do catálogo
+-- TITULO: filmes, séries, documentários e stand-ups
 CREATE TABLE IF NOT EXISTS titulo (
     id_titulo                INT PRIMARY KEY AUTO_INCREMENT,
     nome                     VARCHAR(150) NOT NULL,
@@ -81,8 +81,8 @@ CREATE TABLE IF NOT EXISTS titulo (
 -- GRUPO 2 - TABELAS QUE DEPENDEM DO GRUPO 1
 -- ==========================================================
 
--- CONTA: conta de assinatura (cada conta tem UM plano)
--- Relacionamento 1:N -> plano (1) x conta (N)
+-- CONTA: conta de assinatura, com um plano
+-- 1:N com plano
 CREATE TABLE IF NOT EXISTS conta (
     id_conta      INT PRIMARY KEY AUTO_INCREMENT,
     id_plano      INT          NOT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS conta (
 );
 
 -- TEMPORADA: temporadas de uma série
--- Relacionamento 1:N -> titulo (1) x temporada (N)
+-- 1:N com titulo
 CREATE TABLE IF NOT EXISTS temporada (
     id_temporada     INT PRIMARY KEY AUTO_INCREMENT,
     id_titulo        INT        NOT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS temporada (
 -- ==========================================================
 
 -- DADOS_COBRANCA: forma de pagamento da conta
--- Relacionamento 1:1 com conta (UNIQUE em id_conta)
+-- 1:1 com conta (UNIQUE em id_conta)
 CREATE TABLE IF NOT EXISTS dados_cobranca (
     id_cobranca            INT PRIMARY KEY AUTO_INCREMENT,
     id_conta               INT          NOT NULL UNIQUE,
@@ -135,8 +135,8 @@ CREATE TABLE IF NOT EXISTS dados_cobranca (
     ON UPDATE CASCADE
 );
 
--- PERFIL: perfis de uma conta (ex.: Pai, Mãe, Crianças)
--- Relacionamento 1:N -> conta (1) x perfil (N)
+-- PERFIL: perfis de uma conta
+-- 1:N com conta
 CREATE TABLE IF NOT EXISTS perfil (
     id_perfil       INT PRIMARY KEY AUTO_INCREMENT,
     id_conta        INT         NOT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS perfil (
 );
 
 -- EPISODIO: episódios de uma temporada
--- Relacionamento 1:N -> temporada (1) x episodio (N)
+-- 1:N com temporada
 CREATE TABLE IF NOT EXISTS episodio (
     id_episodio     INT PRIMARY KEY AUTO_INCREMENT,
     id_temporada    INT          NOT NULL,
@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS episodio (
 -- ==========================================================
 
 -- CONFIGURACAO_PERFIL: preferências de um perfil
--- Relacionamento 1:1 com perfil (UNIQUE em id_perfil)
+-- 1:1 com perfil (UNIQUE em id_perfil)
 CREATE TABLE IF NOT EXISTS configuracao_perfil (
     id_configuracao       INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil             INT         NOT NULL UNIQUE,
@@ -246,8 +246,12 @@ CREATE TABLE IF NOT EXISTS historico_visualizacao (
 -- ==========================================================
 -- 2. INSERÇÃO DE DADOS
 -- ----------------------------------------------------------
--- Os dados foram pensados para que as consultas (JOINs) tenham
--- casos "sem correspondência", como no exemplo da professora:
+-- USO DE INTELIGÊNCIA ARTIFICIAL
+-- Os comandos INSERT desta seção foram gerados com apoio de uma
+-- ferramenta de IA, como o template permite. Todos os dados são
+-- fictícios.
+--
+-- Casos sem correspondência, para os LEFT e RIGHT JOIN:
 --   * Planos sem contas: 8 e 9, 11, 13, 15 a 30
 --   * Contas sem perfil: 25 a 32
 --   * Contas sem dados de cobrança: 5 e 32
@@ -681,51 +685,45 @@ INSERT INTO historico_visualizacao (id_visualizacao, id_perfil, id_titulo, data_
 -- ==========================================================
 -- 3. ÍNDICES
 -- ----------------------------------------------------------
--- Chaves primárias, chaves estrangeiras e campos UNIQUE já têm
--- índice automático no MySQL. Os índices abaixo são em campos
--- que NÃO são chave, mas são muito usados em buscas.
+-- PK, FK e UNIQUE já ganham índice no MySQL. Os dois índices
+-- abaixo são em campos que não são chave.
 -- ==========================================================
 
--- ÍNDICE 1 - nome do título
--- Justificativa: a busca por nome é a pesquisa mais comum em um
--- catálogo de streaming (o usuário digita o nome do filme ou da
--- série). O campo nome não é chave nem UNIQUE, então não tinha
--- índice. Com o índice, o MySQL localiza o título sem ler a
--- tabela inteira, e a tabela titulo é a que mais cresce.
+-- ÍNDICE 1 - titulo.nome
+-- Justificativa: o nome é o campo mais pesquisado do catálogo e não
+-- tinha índice, porque não é chave nem UNIQUE. Com o índice, a busca
+-- por nome não lê a tabela inteira.
 CREATE INDEX idx_titulo_nome ON titulo (nome);
 
--- ÍNDICE 2 - data de início da visualização
--- Justificativa: historico_visualizacao é a tabela que mais
--- recebe registros (cada vez que alguém assiste a algo) e os
--- relatórios costumam ser por período ("o que foi assistido em
--- outubro"). O campo data_inicio é usado no WHERE e no ORDER BY
--- desses relatórios e não tinha índice. Com ele, o filtro por
--- período não precisa percorrer todo o histórico.
+-- ÍNDICE 2 - historico_visualizacao.data_inicio
+-- Justificativa: o histórico é a tabela que mais cresce e os
+-- relatórios filtram por período (WHERE e ORDER BY em data_inicio).
+-- Com o índice, o filtro não percorre todas as linhas.
 CREATE INDEX idx_historico_data_inicio ON historico_visualizacao (data_inicio);
 
 -- ==========================================================
 -- 4. SCRIPTS ADICIONAIS (comentados)
 -- ----------------------------------------------------------
--- Exemplos de domínio técnico. Estão comentados para não
--- alterar o banco; para demonstrar, tire o "-- " do comando.
+-- Comandos comentados para não alterar o banco. Para rodar um,
+-- tire o "-- " da frente.
 -- ==========================================================
 
--- Exclusão do banco de dados
+-- Excluir o banco
 -- DROP DATABASE NETFLIX;
 
--- Exclusão de uma tabela
+-- Excluir uma tabela
 -- DROP TABLE configuracao_perfil;
 
--- Exclusão de uma coluna de uma tabela
+-- Excluir uma coluna
 -- ALTER TABLE pessoa DROP COLUMN biografia;
 
--- Adição de uma nova coluna (não prevista na modelagem inicial)
+-- Adicionar uma coluna (não existe na modelagem)
 -- ALTER TABLE pessoa ADD COLUMN email_contato VARCHAR(120);
 
--- Edição de um registro específico
+-- Editar um registro
 -- UPDATE conta SET telefone = '(61) 99999-0000' WHERE id_conta = 1;
 
--- Exclusão de um registro específico
+-- Excluir um registro
 -- DELETE FROM participacao WHERE id_participacao = 30;
 
 -- ==========================================================
@@ -734,8 +732,7 @@ CREATE INDEX idx_historico_data_inicio ON historico_visualizacao (data_inicio);
 
 -- ----------------------------------------------------------
 -- CONSULTA 01 - Simples (1 tabela: conta)
--- Contas do Brasil que precisam de atenção do atendimento:
--- estão suspensas, canceladas ou não têm telefone cadastrado.
+-- Contas do Brasil suspensas, canceladas ou sem telefone.
 -- ----------------------------------------------------------
 SELECT id_conta, email, telefone, status
 FROM conta
@@ -746,8 +743,8 @@ ORDER BY status, email;
 
 -- ----------------------------------------------------------
 -- CONSULTA 02 - Simples (1 tabela: titulo)
--- Quantidade de títulos disponíveis por tipo e o intervalo de
--- anos de lançamento. Só aparecem os tipos com 2 ou mais títulos.
+-- Títulos disponíveis por tipo, com o primeiro e o último ano de
+-- lançamento. Só tipos com 2 ou mais títulos.
 -- ----------------------------------------------------------
 SELECT tipo,
        COUNT(*)            AS qtd_titulos,
@@ -762,8 +759,7 @@ ORDER BY qtd_titulos DESC;
 
 -- ----------------------------------------------------------
 -- CONSULTA 03 - INNER JOIN (2 tabelas: conta e plano)
--- E-mail, país, plano e valor das contas ATIVAS, em ordem de
--- e-mail.
+-- Contas ativas com plano e valor.
 -- ----------------------------------------------------------
 SELECT C.email, C.pais, P.nome AS plano, P.valor_mensal
 FROM conta C
@@ -773,8 +769,8 @@ ORDER BY C.email;
 
 -- ----------------------------------------------------------
 -- CONSULTA 04 - INNER JOIN (2 tabelas: plano e conta)
--- Receita mensal por plano: soma o valor das contas ATIVAS e
--- mostra apenas os planos com receita acima de R$ 100,00.
+-- Receita mensal por plano (só contas ativas). Só planos acima
+-- de R$ 100,00.
 -- ----------------------------------------------------------
 SELECT P.nome              AS plano,
        COUNT(C.id_conta)   AS contas_ativas,
@@ -788,7 +784,7 @@ ORDER BY receita_mensal DESC;
 
 -- ----------------------------------------------------------
 -- CONSULTA 05 - INNER JOIN (2 tabelas: categoria e titulo_categoria)
--- Categorias que têm 4 ou mais títulos, da maior para a menor.
+-- Categorias com 4 ou mais títulos.
 -- ----------------------------------------------------------
 SELECT CA.nome AS categoria, COUNT(*) AS qtd_titulos
 FROM categoria CA
@@ -810,7 +806,7 @@ LIMIT 5;
 
 -- ----------------------------------------------------------
 -- CONSULTA 07 - LEFT JOIN (2 tabelas: titulo e historico_visualizacao)
--- Títulos que NUNCA foram assistidos.
+-- Títulos que nunca foram assistidos.
 -- ----------------------------------------------------------
 SELECT T.id_titulo, T.nome, T.tipo, T.ano_lancamento
 FROM titulo T
@@ -820,8 +816,7 @@ ORDER BY T.nome;
 
 -- ----------------------------------------------------------
 -- CONSULTA 08 - RIGHT JOIN (2 tabelas: episodio e temporada)
--- Quantidade de episódios de CADA temporada. As temporadas que
--- ainda não têm episódio também aparecem (com 0).
+-- Episódios por temporada. Temporada sem episódio aparece com 0.
 -- ----------------------------------------------------------
 SELECT TE.id_temporada,
        TE.numero_temporada,
@@ -833,8 +828,7 @@ ORDER BY qtd_episodios DESC, TE.id_temporada;
 
 -- ----------------------------------------------------------
 -- CONSULTA 09 - 3 tabelas (INNER JOIN e LEFT JOIN: conta, plano e perfil)
--- Para CADA conta: e-mail, plano e quantidade de perfis. As
--- contas sem perfil aparecem com 0.
+-- Perfis por conta. Conta sem perfil aparece com 0.
 -- ----------------------------------------------------------
 SELECT C.email,
        P.nome              AS plano,
@@ -848,8 +842,8 @@ ORDER BY qtd_perfis DESC, C.email;
 -- ----------------------------------------------------------
 -- CONSULTA 10 - 4 tabelas (INNER JOIN: historico_visualizacao,
 -- perfil, conta e titulo)
--- Quantidade de títulos concluídos e soma da duração deles por
--- conta. Só aparecem as contas com 2 ou mais concluídos.
+-- Títulos concluídos por conta e a soma da duração deles. Só
+-- contas com 2 ou mais.
 -- ----------------------------------------------------------
 SELECT C.email,
        COUNT(*)               AS titulos_concluidos,
@@ -908,16 +902,14 @@ SELECT * FROM vw_ranking_titulos ORDER BY visualizacoes DESC LIMIT 10;
 -- ----------------------------------------------------------
 
 -- ==========================================================
--- TRIGGER 1
+-- TRIGGER 1 - renovação da assinatura
 -- Regra:
--- Renovar a assinatura é avançar a data_proxima_cobranca da
--- conta. Antes de gravar a nova data, validar:
---   a) a conta precisa estar ATIVA (conta suspensa ou
---      cancelada não renova);
---   b) a nova data precisa ser POSTERIOR à data atual;
---   c) a nova data precisa cair no dia de vencimento
---      combinado com o cliente (dia_vencimento).
--- Se alguma regra falhar, a renovação é recusada (SIGNAL).
+-- Renovar é avançar data_proxima_cobranca. Antes de gravar a data
+-- nova, a trigger confere:
+--   a) a conta está ativa;
+--   b) a data nova é posterior à atual;
+--   c) a data nova cai no dia de vencimento (dia_vencimento).
+-- Se alguma falhar, a renovação é recusada com SIGNAL.
 --
 -- Tipo:
 -- BEFORE UPDATE
@@ -932,27 +924,27 @@ BEGIN
     DECLARE v_status   VARCHAR(10);
     DECLARE v_mensagem VARCHAR(200);
 
-    -- Só valida quando a data da próxima cobrança foi alterada
+    -- Só valida se a data mudou
     IF NEW.data_proxima_cobranca <> OLD.data_proxima_cobranca THEN
 
-        -- Status atual da conta dona da cobrança
+        -- Status da conta dessa cobrança
         SELECT status INTO v_status
         FROM conta
         WHERE id_conta = NEW.id_conta;
 
-        -- a) conta precisa estar ativa
+        -- a) conta ativa
         IF v_status <> 'Ativa' THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'Conta suspensa ou cancelada nao pode renovar a assinatura.';
         END IF;
 
-        -- b) a data só pode avançar
+        -- b) a data só avança
         IF NEW.data_proxima_cobranca <= OLD.data_proxima_cobranca THEN
             SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'A nova data de cobranca deve ser posterior a data atual.';
         END IF;
 
-        -- c) a data precisa cair no dia de vencimento
+        -- c) data no dia de vencimento
         IF DAY(NEW.data_proxima_cobranca) <> NEW.dia_vencimento THEN
             SET v_mensagem = CONCAT('A cobranca deve cair no dia de vencimento: dia ',
                                     NEW.dia_vencimento, '.');
@@ -963,50 +955,44 @@ BEGIN
 END //
 DELIMITER ;
 
--- Antes: a conta 2 (ativa) tem a próxima cobrança em 24/12/2026
+-- Antes: conta 2 (ativa) com próxima cobrança em 24/12/2026
 SELECT id_conta, nome_titular, dia_vencimento, data_proxima_cobranca
 FROM dados_cobranca
 WHERE id_conta = 2;
 
--- Caso permitido: renovação da conta 2 para 24/01/2027
+-- Renovação válida: conta 2 para 24/01/2027
 UPDATE dados_cobranca
 SET data_proxima_cobranca = '2027-01-24'
 WHERE id_conta = 2;
 
--- Conferindo: a data deve aparecer como 2027-01-24
+-- Depois: data_proxima_cobranca = 2027-01-24
 SELECT id_conta, nome_titular, dia_vencimento, data_proxima_cobranca
 FROM dados_cobranca
 WHERE id_conta = 2;
 
--- Casos bloqueados. Geram erro de propósito; tire o "-- " para testar.
+-- Casos bloqueados (dão erro de propósito; tire o "-- " para testar).
 
--- (a) a conta 7 está SUSPENSA
+-- (a) conta 7 suspensa
 -- UPDATE dados_cobranca SET data_proxima_cobranca = '2027-01-21' WHERE id_conta = 7;
--- Resultado esperado: Error Code 1644. Conta suspensa ou cancelada...
+-- Esperado: erro 1644, conta suspensa ou cancelada.
 
--- (b) a data volta no tempo
+-- (b) data anterior à atual
 -- UPDATE dados_cobranca SET data_proxima_cobranca = '2026-11-24' WHERE id_conta = 2;
--- Resultado esperado: Error Code 1644. A nova data de cobranca deve ser posterior...
+-- Esperado: erro 1644, data nova deve ser posterior à atual.
 
--- (c) a data não cai no dia de vencimento (dia 24)
+-- (c) fora do dia de vencimento (dia 24)
 -- UPDATE dados_cobranca SET data_proxima_cobranca = '2027-02-10' WHERE id_conta = 2;
--- Resultado esperado: Error Code 1644. A cobranca deve cair no dia de vencimento: dia 24.
+-- Esperado: erro 1644, cobrança deve cair no dia 24.
 
 -- ==========================================================
--- TRIGGER 2
+-- TRIGGER 2 - disponibilidade do título
 -- Regra:
--- Quando um título é marcado como indisponível (ou volta a ficar
--- disponível), as temporadas e os episódios dele acompanham.
--- Assim, ao tirar uma série do catálogo, nenhuma temporada ou
--- episódio dela continua aparecendo como disponível.
--- Se o campo disponivel não mudou (por exemplo, só o nome foi
--- alterado), nada é feito.
+-- Quando o campo disponivel de um título muda, as temporadas e os
+-- episódios dele recebem o mesmo valor. Se mudar só o nome, nada
+-- acontece.
 --
 -- Tipo:
--- AFTER UPDATE
---
--- A trigger é disparada pela tabela titulo e altera outras duas
--- tabelas (temporada e episodio).
+-- AFTER UPDATE (dispara em titulo e altera temporada e episodio)
 -- ==========================================================
 DROP TRIGGER IF EXISTS tg_propagar_disponibilidade;
 
@@ -1022,7 +1008,7 @@ BEGIN
         SET disponivel = NEW.disponivel
         WHERE id_titulo = NEW.id_titulo;
 
-        -- Episódios das temporadas desse título
+        -- Episódios dessas temporadas
         UPDATE episodio
         SET disponivel = NEW.disponivel
         WHERE id_temporada IN (SELECT id_temporada
@@ -1032,8 +1018,8 @@ BEGIN
 END //
 DELIMITER ;
 
--- Antes: a série 1 (Sombras da Capital) está disponível, com
--- 3 temporadas e 6 episódios
+-- Antes: série 1 (Sombras da Capital), 3 temporadas e 6 episódios,
+-- tudo disponível
 SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
        TE.disponivel AS temporada,
        COUNT(E.id_episodio) AS episodios,
@@ -1045,12 +1031,12 @@ WHERE T.id_titulo = 1
 GROUP BY T.nome, T.disponivel, TE.numero_temporada, TE.disponivel
 ORDER BY TE.numero_temporada;
 
--- Comando que dispara a trigger: a série 1 sai do catálogo
+-- Dispara a trigger: a série 1 sai do catálogo
 UPDATE titulo
 SET disponivel = 0
 WHERE id_titulo = 1;
 
--- Conferindo: título, temporadas e episódios aparecem com 0
+-- Depois: título, temporadas e episódios em 0
 SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
        TE.disponivel AS temporada,
        COUNT(E.id_episodio) AS episodios,
@@ -1062,12 +1048,12 @@ WHERE T.id_titulo = 1
 GROUP BY T.nome, T.disponivel, TE.numero_temporada, TE.disponivel
 ORDER BY TE.numero_temporada;
 
--- A série 1 volta ao catálogo e tudo volta a ficar disponível
+-- A série 1 volta ao catálogo
 UPDATE titulo
 SET disponivel = 1
 WHERE id_titulo = 1;
 
--- Conferindo: tudo volta a 1
+-- Depois: tudo em 1
 SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
        TE.disponivel AS temporada,
        COUNT(E.id_episodio) AS episodios,
@@ -1083,12 +1069,12 @@ ORDER BY TE.numero_temporada;
 -- USUÁRIOS E PERMISSÕES
 -- ----------------------------------------------------------
 -- admin_netflix: acesso total ao banco
--- analista:      apenas consulta dados (relatórios)
--- atendente:     consulta contas e perfis e altera o status da conta
--- Observação: senhas de exemplo, apenas para a atividade.
+-- analista:      só consulta
+-- atendente:     consulta conta e perfil e altera o status da conta
+-- As senhas são de exemplo, só para a atividade.
 
--- Remove os usuários, se já existirem (permite executar o
--- script mais de uma vez)
+-- Remove os usuários se já existirem (o script pode rodar mais
+-- de uma vez)
 DROP USER IF EXISTS 'admin_netflix'@'localhost';
 DROP USER IF EXISTS 'analista'@'localhost';
 DROP USER IF EXISTS 'atendente'@'localhost';
@@ -1112,17 +1098,17 @@ SHOW GRANTS FOR 'admin_netflix'@'localhost';
 SHOW GRANTS FOR 'analista'@'localhost';
 SHOW GRANTS FOR 'atendente'@'localhost';
 
--- Exclusão de um dos usuários criados
+-- Exclusão de um usuário
 DROP USER 'analista'@'localhost';
 
 -- Revogação de privilégios de dois usuários
--- admin_netflix deixa de poder apagar dados e objetos
+-- admin_netflix perde DELETE e DROP
 REVOKE DELETE, DROP ON netflix.* FROM 'admin_netflix'@'localhost';
 
--- atendente deixa de poder alterar o status da conta
+-- atendente perde o UPDATE em status
 REVOKE UPDATE (status) ON netflix.conta FROM 'atendente'@'localhost';
 
--- Conferindo novamente
+-- Permissões depois do REVOKE
 SHOW GRANTS FOR 'admin_netflix'@'localhost';
 SHOW GRANTS FOR 'atendente'@'localhost';
 
@@ -1131,8 +1117,7 @@ SHOW GRANTS FOR 'atendente'@'localhost';
 -- ----------------------------------------------------------
 
 -- Exemplo de COMMIT
--- Cadastro de um novo título junto com a sua categoria.
--- As duas operações devem acontecer juntas.
+-- Título novo e a categoria dele, gravados na mesma transação.
 START TRANSACTION;
 
 INSERT INTO titulo (id_titulo, nome, sinopse, tipo, ano_lancamento, classificacao_indicativa, duracao_minutos, idioma_original, data_adicao_catalogo)
@@ -1143,22 +1128,21 @@ VALUES (31, 8, 1, 1, '2026-11-16');
 
 COMMIT;
 
--- Conferência: o título 31 foi gravado
+-- Título 31 gravado
 SELECT id_titulo, nome, tipo FROM titulo WHERE id_titulo = 31;
 
 -- Exemplo de ROLLBACK
--- Um reajuste de preço aplicado errado (multiplicou por 10)
--- é desfeito.
+-- Reajuste de preço errado (x10), desfeito.
 START TRANSACTION;
 
 UPDATE plano
 SET valor_mensal = valor_mensal * 10
 WHERE id_plano = 5;
 
--- Antes de confirmar: o valor está errado (559.00)
+-- Antes do ROLLBACK: 559.00
 SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;
 
 ROLLBACK;
 
--- Conferência: o valor voltou para 55.90
+-- Depois do ROLLBACK: 55.90
 SELECT id_plano, nome, valor_mensal FROM plano WHERE id_plano = 5;

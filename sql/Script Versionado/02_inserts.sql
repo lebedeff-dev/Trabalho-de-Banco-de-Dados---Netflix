@@ -9,8 +9,12 @@ USE NETFLIX;
 -- ==========================================================
 -- 2. INSERÇÃO DE DADOS
 -- ----------------------------------------------------------
--- Os dados foram pensados para que as consultas (JOINs) tenham
--- casos "sem correspondência", como no exemplo da professora:
+-- USO DE INTELIGÊNCIA ARTIFICIAL
+-- Os comandos INSERT desta seção foram gerados com apoio de uma
+-- ferramenta de IA, como o template permite. Todos os dados são
+-- fictícios.
+--
+-- Casos sem correspondência, para os LEFT e RIGHT JOIN:
 --   * Planos sem contas: 8 e 9, 11, 13, 15 a 30
 --   * Contas sem perfil: 25 a 32
 --   * Contas sem dados de cobrança: 5 e 32
