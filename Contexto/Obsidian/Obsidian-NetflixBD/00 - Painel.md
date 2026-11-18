@@ -22,6 +22,7 @@
 - [[Mapa dos materiais]] — o que a professora forneceu
 - [[Padroes dos scripts da professora]] — o estilo seguido
 - [[Passo a passo]] — checklist de execução
+- [[Roteiro de apresentacao]] — o que mostrar e dizer, com tempo
 
 ## Explicações para apresentar (uma por seção do template)
 | Seção do template | Arquivo em `sql/Script Versionado` | Nota |
