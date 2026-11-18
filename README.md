@@ -100,6 +100,6 @@ O vault em [`Contexto/Obsidian`](Contexto/Obsidian/) tem uma nota de explicaçã
 
 ## 6. Integrantes
 
-- LUIS EDUARDO DE ANDRADE NEVES - [duduandradeneves-ui](https://github.com/duduandradeneves-ui)
-- **LUÍS GUILHERME LEBEDEFF ROCHA MOTA** - [lebedeff-dev](https://github.com/lebedeff-dev)
-- KAIO RAMOS LUIZ - [paladinoknz](https://github.com/Paladinoknz)
+- LUIS EDUARDO DE ANDRADE NEVES - [Duduandradeneves-ui](https://github.com/duduandradeneves-ui)
+- **LUÍS GUILHERME LEBEDEFF ROCHA MOTA** - [Lebedeff-dev](https://github.com/lebedeff-dev)
+- KAIO RAMOS LUIZ - [Paladinoknz](https://github.com/Paladinoknz)
