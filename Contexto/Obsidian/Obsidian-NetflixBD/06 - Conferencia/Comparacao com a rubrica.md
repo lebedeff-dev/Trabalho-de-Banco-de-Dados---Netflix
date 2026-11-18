@@ -36,7 +36,7 @@ Conferência feita em 17/11/2026, rodando `sql/netflix_bd.sql` completo num MySQ
 1. **Índice e view**: os scripts da professora não têm exemplo; só o PDF *06 - DDL* cita os dois. Usei a forma mais simples.
 2. **`DROP DATABASE IF EXISTS` no início** e **`DROP USER IF EXISTS`** antes da criação dos usuários: servem para o script poder rodar mais de uma vez. O exemplo de exclusão pedido pelo template está na seção 4 (comentado) e na seção 6 (`DROP USER analista`).
 3. **Testado em MySQL 8.0** numa instância separada nesta máquina. Vale rodar uma vez no seu Workbench antes de entregar.
-4. A matrícula de Luis Eduardo foi passada como `UC2520028` (uma casa a menos que a sua): confira.
+4. Matrículas no cabeçalho: Luis Eduardo `UC25200028` e Luís Guilherme `UC25200734`. A do Kaio ainda falta.
 
 ## O que falta fazer (não é do script)
 
