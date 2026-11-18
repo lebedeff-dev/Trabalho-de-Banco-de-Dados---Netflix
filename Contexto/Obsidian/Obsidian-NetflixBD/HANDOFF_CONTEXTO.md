@@ -15,7 +15,7 @@ Leia isto primeiro se você é uma IA ou pessoa retomando o trabalho.
 ## Estado atual (17/11/2026)
 O script `sql/netflix_bd.sql` está na estrutura do template (seções 1 a 6) e testado em MySQL 8. Conferência em [[Comparacao com a rubrica]]. Falta: matrícula do Kaio no cabeçalho, rodar no Workbench do dono e enviar no AVA.
 
-Grupo (modelo lógico em PDF): Luis Eduardo de Andrade Neves, Luís Guilherme Lebedeff Rocha Mota e Kaio Ramos Luiz. A professora avisou que **vai cobrar as triggers**: por isso são duas bem elaboradas (BEFORE que valida a renovação da assinatura com `DECLARE`, `SELECT INTO` e `SIGNAL`; AFTER que sincroniza a cobrança com o status da conta). O dono pediu triggers práticas, ligadas à renovação, e não à visualização. Ver [[Parte 6 - Recursos adicionais (explicacao)]].
+Grupo (modelo lógico em PDF): Luis Eduardo de Andrade Neves, Luís Guilherme Lebedeff Rocha Mota e Kaio Ramos Luiz. A professora avisou que **vai cobrar as triggers**: por isso são duas bem elaboradas (BEFORE que valida a renovação da assinatura com `DECLARE`, `SELECT INTO` e `SIGNAL`; AFTER que cria a configuração de cada perfil novo, com `IF/ELSE` para perfil infantil). O dono pediu triggers práticas (renovação, não visualização) e de assuntos diferentes entre si (cobrança e cadastro de perfil). Ver [[Parte 6 - Recursos adicionais (explicacao)]].
 
 Decisões tomadas:
 - Triggers usam só as 13 tabelas do modelo (sem tabela de log), para não fugir da modelagem.

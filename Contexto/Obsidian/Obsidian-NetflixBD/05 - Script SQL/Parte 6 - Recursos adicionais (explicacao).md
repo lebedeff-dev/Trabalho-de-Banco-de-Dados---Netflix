@@ -32,23 +32,28 @@ Conceitos usados, todos de `bd_supermercado-trigger`:
 - `DECLARE` cria variáveis locais; `SELECT ... INTO` guarda o status da conta numa variável (Trigger 5 da professora).
 - `SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '...'` **cancela** a operação com uma mensagem (Trigger 5). A mensagem da regra (c) é montada com `CONCAT` numa variável, igual à da professora.
 - `OLD` e `NEW` juntos, para comparar a data antiga com a nova (Triggers 1 e 8 da professora).
-- `IF NEW.data <> OLD.data`: a trigger só valida quando a data foi alterada. Um `UPDATE` de outro campo (como `cobranca_ativa`, que a Trigger 2 altera) passa direto.
+- `IF NEW.data <> OLD.data`: a trigger só valida quando a data foi alterada. Um `UPDATE` de outro campo (como `cobranca_ativa`) passa direto.
 - `DAY(data)` devolve o dia do mês. Função básica, da mesma família do `YEAR()` e `DATE_FORMAT()` dos materiais.
 - `BEFORE` é obrigatório: só antes de gravar dá para recusar a renovação.
 
 Os três casos bloqueados estão **comentados** no script (geram erro de propósito, como a professora faz). Para demonstrar, tira-se o `-- ` e executa-se só aquele `UPDATE`.
 
-### Trigger 2 - `tg_sincronizar_cobranca` (AFTER UPDATE em `conta`)
+### Trigger 2 - `tg_criar_configuracao_perfil` (AFTER INSERT em `perfil`)
 
-Quando o **status** da conta muda, a cobrança acompanha: Suspensa ou Cancelada → `cobranca_ativa = 0`; Ativa → `1`. Assim não se cobra de quem não está com a assinatura ativa. Se só o telefone mudou, nada acontece (`IF OLD.status <> NEW.status`).
+Todo perfil novo ganha sua configuração sozinho (relacionamento **1:1** entre `perfil` e `configuracao_perfil`):
 
-Teste: conta 2 com cobrança ativa (1) → suspensa → cobrança **0** → ativa de novo → cobrança **1**.
+| Perfil | O que a trigger grava | Resultado do teste |
+|---|---|---|
+| Comum | Configuração padrão da tabela (os `DEFAULT`) | Perfil "Principal": reprodução automática 1, qualidade Automatica |
+| Infantil | Reprodução automática **desligada** e qualidade **Media** | Perfil "Kids": reprodução automática 0, qualidade Media |
 
-- É `AFTER` porque só faz sentido mexer na cobrança depois que a conta foi realmente alterada.
-- Dispara em `conta` e altera **outra tabela** (`dados_cobranca`): é o mesmo padrão da Trigger 6 da professora (item do pedido → estoque e pedido).
-- `OLD` e `NEW` juntos, só existem no `UPDATE`. É o mesmo uso da Trigger 1 da professora (`IF OLD.SALARIO <> NEW.SALARIO`).
-- As duas triggers trabalham juntas: a Trigger 2 desliga a cobrança de quem foi suspenso, e a Trigger 1 impede a renovação dessa mesma conta.
-- Uma trigger não pode alterar a **própria** tabela que a disparou (erro 1442); por isso o `UPDATE` é na tabela de cobrança.
+Teste: a conta 25 não tinha perfis; inseri "Principal" e "Kids" e cada um já apareceu com a sua configuração, sem nenhum `INSERT` em `configuracao_perfil`.
+
+- **AFTER** porque o `id_perfil` (AUTO_INCREMENT) só existe depois que o perfil é gravado, e a configuração precisa dele.
+- **Dispara em `perfil` e grava em outra tabela** (`configuracao_perfil`): mesmo padrão da Trigger 6 da professora (item do pedido que altera estoque e pedido).
+- `IF ... ELSE` com `NEW.perfil_infantil` decide qual configuração criar. `NEW` é o perfil que acabou de ser inserido.
+- **Assunto diferente da Trigger 1:** a 1 protege a cobrança (BEFORE, recusa); a 2 automatiza o cadastro de perfil (AFTER, cria dados).
+- Uma trigger não pode alterar a **própria** tabela que a disparou (erro 1442); por isso o `INSERT` é na tabela de configuração.
 
 Como ler uma trigger: nome → **quando** (`BEFORE/AFTER ... ON tabela`) → `FOR EACH ROW` (uma vez por linha) → corpo. `DELIMITER //` evita que o MySQL encerre o comando no primeiro `;` de dentro.
 

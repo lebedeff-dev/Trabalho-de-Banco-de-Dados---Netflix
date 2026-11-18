@@ -995,58 +995,51 @@ WHERE id_conta = 2;
 -- ==========================================================
 -- TRIGGER 2
 -- Regra:
--- Quando o status de uma conta muda, a cobrança dela acompanha:
--- conta Suspensa ou Cancelada -> cobranca_ativa = 0;
--- conta Ativa novamente       -> cobranca_ativa = 1.
--- Assim não se cobra de quem não está com a assinatura ativa.
--- Se o status não mudou (por exemplo, só o telefone foi
--- alterado), nada é feito.
+-- Todo perfil novo ganha sua configuração (relacionamento 1:1
+-- perfil e configuracao_perfil) automaticamente:
+--   a) perfil comum   -> configuração padrão da tabela;
+--   b) perfil infantil -> reprodução automática DESLIGADA e
+--      qualidade Média.
 --
 -- Tipo:
--- AFTER UPDATE
+-- AFTER INSERT
 --
--- A trigger é disparada pela tabela conta e altera outra tabela
--- (dados_cobranca).
+-- É AFTER porque o id_perfil só existe depois que o perfil é
+-- gravado. A trigger é disparada por perfil e grava em outra
+-- tabela (configuracao_perfil).
 -- ==========================================================
-DROP TRIGGER IF EXISTS tg_sincronizar_cobranca;
+DROP TRIGGER IF EXISTS tg_criar_configuracao_perfil;
 
 DELIMITER //
-CREATE TRIGGER tg_sincronizar_cobranca
-AFTER UPDATE ON conta
+CREATE TRIGGER tg_criar_configuracao_perfil
+AFTER INSERT ON perfil
 FOR EACH ROW
 BEGIN
-    IF OLD.status <> NEW.status THEN
-        UPDATE dados_cobranca
-        SET cobranca_ativa = IF(NEW.status = 'Ativa', 1, 0)
-        WHERE id_conta = NEW.id_conta;
+    IF NEW.perfil_infantil = 1 THEN
+        INSERT INTO configuracao_perfil (id_perfil, reproducao_automatica, qualidade_preferida)
+        VALUES (NEW.id_perfil, 0, 'Media');
+    ELSE
+        INSERT INTO configuracao_perfil (id_perfil)
+        VALUES (NEW.id_perfil);
     END IF;
 END //
 DELIMITER ;
 
--- Antes: a cobrança da conta 2 está ativa
-SELECT id_conta, nome_titular, cobranca_ativa
-FROM dados_cobranca
-WHERE id_conta = 2;
+-- Comando que dispara a trigger: a conta 25 (sem perfis) ganha
+-- um perfil comum e um perfil infantil
+INSERT INTO perfil (id_conta, nome, data_criacao, perfil_infantil)
+VALUES (25, 'Principal', '2026-11-17', 0);
 
--- Comando que dispara a trigger: a conta 2 é suspensa
-UPDATE conta
-SET status = 'Suspensa'
-WHERE id_conta = 2;
+INSERT INTO perfil (id_conta, nome, data_criacao, perfil_infantil)
+VALUES (25, 'Kids', '2026-11-17', 1);
 
--- Conferindo: cobranca_ativa deve aparecer como 0
-SELECT id_conta, nome_titular, cobranca_ativa
-FROM dados_cobranca
-WHERE id_conta = 2;
-
--- A conta 2 volta a ficar ativa e a cobrança é reativada
-UPDATE conta
-SET status = 'Ativa'
-WHERE id_conta = 2;
-
--- Conferindo: cobranca_ativa deve voltar a 1
-SELECT id_conta, nome_titular, cobranca_ativa
-FROM dados_cobranca
-WHERE id_conta = 2;
+-- Conferindo: cada perfil já tem a sua configuração; o Kids está
+-- com reproducao_automatica = 0 e qualidade Media
+SELECT P.id_perfil, P.nome, P.perfil_infantil,
+       C.reproducao_automatica, C.qualidade_preferida
+FROM perfil P
+INNER JOIN configuracao_perfil C ON C.id_perfil = P.id_perfil
+WHERE P.id_conta = 25;
 
 -- ----------------------------------------------------------
 -- USUÁRIOS E PERMISSÕES
