@@ -22,6 +22,8 @@
 
 ## Sumário
 
+Seções numeradas de 1 a 7, na ordem em que aparecem neste README.
+
 1. [O que a atividade pede](#1-o-que-a-atividade-pede)
 2. [O que foi entregue](#2-o-que-foi-entregue)
 3. [Modelo](#3-modelo)
