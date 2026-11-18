@@ -33,6 +33,8 @@
 
 A rubrica completa está em [`Contexto/Proposta`](Contexto/Proposta/). São 5 critérios de 3 pontos cada (total 15).
 
+A professora também enviou um [template do arquivo `.sql`](Contexto/Proposta/Template%20-%20Projeto%20-%20Implementacao.sql), que define o que entregar e em que ordem: estrutura, inserts, índices, scripts adicionais, consultas e recursos adicionais. O script deste repositório segue essa estrutura.
+
 | Critério | Requisito |
 |---|---|
 | Estrutura do banco | Banco e tabelas conforme a modelagem, com PK, FK e relacionamentos |
