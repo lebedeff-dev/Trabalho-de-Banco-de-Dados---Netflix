@@ -38,22 +38,26 @@ Conceitos usados, todos de `bd_supermercado-trigger`:
 
 Os três casos bloqueados estão **comentados** no script (geram erro de propósito, como a professora faz). Para demonstrar, tira-se o `-- ` e executa-se só aquele `UPDATE`.
 
-### Trigger 2 - `tg_criar_configuracao_perfil` (AFTER INSERT em `perfil`)
+### Trigger 2 - `tg_propagar_disponibilidade` (AFTER UPDATE em `titulo`)
 
-Todo perfil novo ganha sua configuração sozinho (relacionamento **1:1** entre `perfil` e `configuracao_perfil`):
+Quando um título sai do catálogo (`disponivel = 0`) ou volta (`disponivel = 1`), as **temporadas e os episódios** dele acompanham. Assim, ao tirar uma série do ar, nada dela continua aparecendo como disponível.
 
-| Perfil | O que a trigger grava | Resultado do teste |
-|---|---|---|
-| Comum | Configuração padrão da tabela (os `DEFAULT`) | Perfil "Principal": reprodução automática 1, qualidade Automatica |
-| Infantil | Reprodução automática **desligada** e qualidade **Media** | Perfil "Kids": reprodução automática 0, qualidade Media |
+Teste com a série 1 (Sombras da Capital, 3 temporadas e 6 episódios):
 
-Teste: a conta 25 não tinha perfis; inseri "Principal" e "Kids" e cada um já apareceu com a sua configuração, sem nenhum `INSERT` em `configuracao_perfil`.
+| Momento | Título | Temporadas disponíveis | Episódios disponíveis |
+|---|---|---|---|
+| Antes | 1 | 3 de 3 | 6 de 6 |
+| Depois de `UPDATE titulo SET disponivel = 0` | 0 | 0 de 3 | 0 de 6 |
+| Depois de voltar para 1 | 1 | 3 de 3 | 6 de 6 |
 
-- **AFTER** porque o `id_perfil` (AUTO_INCREMENT) só existe depois que o perfil é gravado, e a configuração precisa dele.
-- **Dispara em `perfil` e grava em outra tabela** (`configuracao_perfil`): mesmo padrão da Trigger 6 da professora (item do pedido que altera estoque e pedido).
-- `IF ... ELSE` com `NEW.perfil_infantil` decide qual configuração criar. `NEW` é o perfil que acabou de ser inserido.
-- **Assunto diferente da Trigger 1:** a 1 protege a cobrança (BEFORE, recusa); a 2 automatiza o cadastro de perfil (AFTER, cria dados).
-- Uma trigger não pode alterar a **própria** tabela que a disparou (erro 1442); por isso o `INSERT` é na tabela de configuração.
+Um único `UPDATE` em `titulo`; o banco atualiza as outras duas tabelas sozinho.
+
+- **AFTER** porque só faz sentido propagar depois que o título foi realmente alterado.
+- **Altera duas tabelas** (`temporada` e `episodio`): mesmo padrão da Trigger 6 da professora (item do pedido que altera estoque e pedido).
+- `IF OLD.disponivel <> NEW.disponivel`: só age quando o campo mudou (igual à Trigger 1 da professora, que compara o salário antigo e o novo). Se só o nome mudar, nada acontece.
+- Os episódios não têm `id_titulo`: chegam ao título pela temporada, por isso o `UPDATE` usa `WHERE id_temporada IN (SELECT id_temporada FROM temporada WHERE id_titulo = ...)`.
+- **Assunto diferente da Trigger 1:** a 1 protege a cobrança (BEFORE, recusa); a 2 mantém o catálogo coerente (AFTER, propaga).
+- Uma trigger não pode alterar a **própria** tabela que a disparou (erro 1442); por isso ela altera `temporada` e `episodio`, não `titulo`.
 
 Como ler uma trigger: nome → **quando** (`BEFORE/AFTER ... ON tabela`) → `FOR EACH ROW` (uma vez por linha) → corpo. `DELIMITER //` evita que o MySQL encerre o comando no primeiro `;` de dentro.
 
@@ -95,7 +99,7 @@ Sequência pedida pelo template:
 4. **O que são NEW e OLD?** NEW é o valor que está chegando; OLD é o que já estava gravado. INSERT só tem NEW; UPDATE tem os dois; DELETE só tem OLD.
 5. **Para que serve o SIGNAL?** Para cancelar a operação com uma mensagem de erro definida por nós.
 6. **O que a trigger 1 impede?** Renovar assinatura de conta suspensa ou cancelada, voltar a data de cobrança no tempo e cobrar fora do dia de vencimento combinado.
-7. **Por que a trigger 2 é AFTER?** Ela altera outra tabela, o que só faz sentido depois que a conta foi atualizada com sucesso.
+7. **Por que a trigger 2 é AFTER?** Porque só faz sentido propagar a disponibilidade depois que o título foi realmente alterado.
 8. **Por que as triggers não usam tabela de log?** Para manter exatamente as 13 tabelas do modelo aprovado.
 9. **Diferença entre GRANT e REVOKE?** GRANT dá permissão; REVOKE tira.
 10. **Dá para limitar permissão a uma coluna?** Sim: `GRANT UPDATE (status)`.
