@@ -107,6 +107,6 @@ A concepção do sistema, o desenvolvimento do código-fonte e as decisões téc
 
 ## 7. Autores
 
-- LUIS EDUARDO DE ANDRADE NEVES - [Duduandradeneves](https://github.com/duduandradeneves-ui)
+- **LUIS EDUARDO DE ANDRADE NEVES** - [Duduandradeneves](https://github.com/duduandradeneves-ui)
 - **LUÍS GUILHERME LEBEDEFF ROCHA MOTA** - [lebedeff-dev](https://github.com/lebedeff-dev)
-- KAIO RAMOS LUIZ - [Paladinoknz](https://github.com/Paladinoknz)
+- **KAIO RAMOS LUIZ** - [Paladinoknz](https://github.com/Paladinoknz)
