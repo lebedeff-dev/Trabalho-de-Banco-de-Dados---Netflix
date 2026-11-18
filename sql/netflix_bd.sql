@@ -1,4 +1,4 @@
-/* PROJETO FINAL - LABORATÓRIO DE BANCO DE DADOS
+/* Grupo 01 - LABORATÓRIO DE BANCO DE DADOS
 Banco de dados NETFLIX
 
 Identificação do Grupo:
