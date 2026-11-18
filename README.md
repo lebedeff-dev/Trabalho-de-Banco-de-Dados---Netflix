@@ -27,7 +27,8 @@
 3. [Modelo](#3-modelo)
 4. [Como executar](#4-como-executar)
 5. [Estrutura do repositório](#5-estrutura-do-repositório)
-6. [Integrantes](#6-integrantes)
+6. [Declaração de Uso de Inteligência Artificial](#6-declaração-de-uso-de-inteligência-artificial)
+7. [Autores](#7-autores)
 
 ## 1. O que a atividade pede
 
@@ -98,7 +99,13 @@ Contexto/
 
 O vault em [`Contexto/Obsidian`](Contexto/Obsidian/) tem uma nota de explicação para cada critério e a conferência do resultado contra a rubrica. Para abrir: Obsidian → *Open folder as vault* → `Obsidian-NetflixBD`.
 
-## 6. Integrantes
+## 6. Declaração de Uso de Inteligência Artificial
+
+Ferramentas de inteligência artificial (Claude, da Anthropic) foram utilizadas neste projeto como apoio à organização e ao gerenciamento do repositório no GitHub, incluindo a estruturação de pastas, a padronização da documentação e a redação de mensagens de commit, e também na criação dos comandos `INSERT` do banco de dados, cujos dados são todos fictícios.
+
+A concepção do sistema, o desenvolvimento do código-fonte e as decisões técnicas e de projeto são de autoria dos integrantes do grupo, listados na seção de Autores. Todo o conteúdo publicado neste repositório foi revisado pela equipe, que se responsabiliza integralmente por ele.
+
+## 7. Autores
 
 - LUIS EDUARDO DE ANDRADE NEVES - [Duduandradeneves](https://github.com/duduandradeneves-ui)
 - **LUÍS GUILHERME LEBEDEFF ROCHA MOTA** - [lebedeff-dev](https://github.com/lebedeff-dev)
