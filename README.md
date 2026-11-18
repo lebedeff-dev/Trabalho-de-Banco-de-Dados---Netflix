@@ -1,7 +1,22 @@
-# Banco de Dados Netflix
+<p align="center">
+  <img src="imagens/netflix-logo.png" alt="Netflix" width="300">
+</p>
 
-Implementação em **MySQL** do modelo lógico da Netflix.
-Atividade AT1 - Projeto - Implementação · Laboratório de Banco de Dados (GPE17M40086) · Católica de Brasília
+<h1 align="center">Banco de Dados Netflix</h1>
+
+<p align="center">
+  Implementação em <b>MySQL</b> do modelo lógico da Netflix, com 13 tabelas.<br>
+  Atividade AT1 - Projeto - Implementação · Laboratório de Banco de Dados (GPE17M40086) · Católica de Brasília
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Linguagem-SQL-E48E00?style=flat" alt="SQL">
+  <img src="https://img.shields.io/badge/Banco-MySQL%208-00758F?style=flat" alt="MySQL 8">
+  <img src="https://img.shields.io/badge/Ferramenta-MySQL%20Workbench-1A7BB8?style=flat" alt="MySQL Workbench">
+  <img src="https://img.shields.io/badge/Modelagem-Workbench%20(.mwb)-1A7BB8?style=flat" alt="Modelagem">
+  <img src="https://img.shields.io/badge/Versionamento-Git%20%2F%20GitHub-F05032?style=flat" alt="Git e GitHub">
+  <img src="https://img.shields.io/badge/Contexto-Obsidian-7C3AED?style=flat" alt="Obsidian">
+</p>
 
 > Projeto exclusivamente acadêmico e sem fins lucrativos. "Netflix" e demais nomes pertencem aos seus donos e são usados apenas para ilustrar o trabalho. Todos os dados inseridos são fictícios.
 
@@ -67,6 +82,7 @@ O script apaga e recria o banco `NETFLIX` a cada execução.
 
 ```
 README.md
+imagens/                 Logo usado no README
 Banco de dados/          Modelo lógico (.mwb, para o MySQL Workbench)
 sql/
   netflix_bd.sql         Script completo do banco (seções 1 a 6)
