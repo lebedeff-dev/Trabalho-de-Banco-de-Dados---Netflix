@@ -16,33 +16,38 @@ Arquivo: `06_recursos_adicionais.sql` · Template: **6. Recursos adicionais** (3
 
 **O que é:** ação que o banco executa sozinho quando acontece `INSERT`, `UPDATE` ou `DELETE`. **Fonte:** `bd_supermercado-trigger - Copy.sql` e PDF *11 - Triggers*. Usam só as 13 tabelas do modelo (sem tabela de log).
 
-### Trigger 1 - `tg_validar_visualizacao` (BEFORE INSERT em `historico_visualizacao`)
+### Trigger 1 - `tg_validar_renovacao` (BEFORE UPDATE em `dados_cobranca`)
 
-Valida antes de gravar que um perfil começou a assistir a algo:
+**Renovar a assinatura** é avançar a `data_proxima_cobranca` da conta. Antes de gravar a nova data, a trigger valida:
 
 | Regra | O que faz | Resultado do teste |
 |---|---|---|
-| a) Conta precisa estar **Ativa** | Recusa com `SIGNAL` | Perfil 11 (conta suspensa): erro 1644 "Conta suspensa ou cancelada..." |
-| b) Perfil **infantil** só vê classificação **L ou 10** | Recusa com `SIGNAL` | Perfil 3 (infantil) no título 1 (18 anos): erro 1644 "Perfil infantil nao pode..." |
-| c) Minuto negativo vira 0 | Corrige com `SET NEW` | Inseri -10, gravou **0** |
+| a) A conta precisa estar **Ativa** | Recusa (`SIGNAL`) | Conta 7, suspensa: erro 1644 "Conta suspensa ou cancelada nao pode renovar..." |
+| b) A nova data precisa ser **posterior** à atual | Recusa (`SIGNAL`) | Conta 2 voltando para 24/11/2026: erro 1644 "A nova data de cobranca deve ser posterior..." |
+| c) A data precisa cair no **dia de vencimento** do cliente | Recusa (`SIGNAL`) | Conta 2 (dia 24) com data dia 10: erro 1644 "A cobranca deve cair no dia de vencimento: dia 24." |
+
+Caso permitido: conta 2 renovada de 24/12/2026 para **24/01/2027**.
 
 Conceitos usados, todos de `bd_supermercado-trigger`:
-- `DECLARE` cria variáveis locais (Trigger 5 da professora).
-- `SELECT ... INTO` guarda o resultado de uma consulta na variável (Trigger 5).
-- `SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '...'` **cancela** a operação com uma mensagem (Trigger 5). O `SET NEW.campo` (regra c) só **corrige** e deixa gravar (Triggers 3 e 4).
-- `BEFORE` é obrigatório aqui: só antes de gravar dá para recusar ou corrigir o dado.
+- `DECLARE` cria variáveis locais; `SELECT ... INTO` guarda o status da conta numa variável (Trigger 5 da professora).
+- `SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '...'` **cancela** a operação com uma mensagem (Trigger 5). A mensagem da regra (c) é montada com `CONCAT` numa variável, igual à da professora.
+- `OLD` e `NEW` juntos, para comparar a data antiga com a nova (Triggers 1 e 8 da professora).
+- `IF NEW.data <> OLD.data`: a trigger só valida quando a data foi alterada. Um `UPDATE` de outro campo (como `cobranca_ativa`, que a Trigger 2 altera) passa direto.
+- `DAY(data)` devolve o dia do mês. Função básica, da mesma família do `YEAR()` e `DATE_FORMAT()` dos materiais.
+- `BEFORE` é obrigatório: só antes de gravar dá para recusar a renovação.
 
-Os dois casos bloqueados estão **comentados** no script (geram erro de propósito, como a professora faz). Para demonstrar, tira-se o `-- ` e executa-se só aquele `INSERT`.
+Os três casos bloqueados estão **comentados** no script (geram erro de propósito, como a professora faz). Para demonstrar, tira-se o `-- ` e executa-se só aquele `UPDATE`.
 
 ### Trigger 2 - `tg_sincronizar_cobranca` (AFTER UPDATE em `conta`)
 
-Quando o **status** da conta muda, a cobrança acompanha: Suspensa ou Cancelada → `cobranca_ativa = 0`; Ativa → `1`. Se só o telefone mudou, nada acontece (`IF OLD.status <> NEW.status`).
+Quando o **status** da conta muda, a cobrança acompanha: Suspensa ou Cancelada → `cobranca_ativa = 0`; Ativa → `1`. Assim não se cobra de quem não está com a assinatura ativa. Se só o telefone mudou, nada acontece (`IF OLD.status <> NEW.status`).
 
 Teste: conta 2 com cobrança ativa (1) → suspensa → cobrança **0** → ativa de novo → cobrança **1**.
 
 - É `AFTER` porque só faz sentido mexer na cobrança depois que a conta foi realmente alterada.
 - Dispara em `conta` e altera **outra tabela** (`dados_cobranca`): é o mesmo padrão da Trigger 6 da professora (item do pedido → estoque e pedido).
 - `OLD` e `NEW` juntos, só existem no `UPDATE`. É o mesmo uso da Trigger 1 da professora (`IF OLD.SALARIO <> NEW.SALARIO`).
+- As duas triggers trabalham juntas: a Trigger 2 desliga a cobrança de quem foi suspenso, e a Trigger 1 impede a renovação dessa mesma conta.
 - Uma trigger não pode alterar a **própria** tabela que a disparou (erro 1442); por isso o `UPDATE` é na tabela de cobrança.
 
 Como ler uma trigger: nome → **quando** (`BEFORE/AFTER ... ON tabela`) → `FOR EACH ROW` (uma vez por linha) → corpo. `DELIMITER //` evita que o MySQL encerre o comando no primeiro `;` de dentro.
@@ -84,8 +89,9 @@ Sequência pedida pelo template:
 3. **Diferença entre BEFORE e AFTER?** BEFORE roda antes de gravar e pode corrigir ou recusar o dado; AFTER roda depois de gravar. O trabalho tem uma de cada.
 4. **O que são NEW e OLD?** NEW é o valor que está chegando; OLD é o que já estava gravado. INSERT só tem NEW; UPDATE tem os dois; DELETE só tem OLD.
 5. **Para que serve o SIGNAL?** Para cancelar a operação com uma mensagem de erro definida por nós.
-6. **Por que a trigger 2 é AFTER?** Ela altera outra tabela, o que só faz sentido depois que a conta foi atualizada com sucesso.
-7. **Por que as triggers não usam tabela de log?** Para manter exatamente as 13 tabelas do modelo aprovado.
-8. **Diferença entre GRANT e REVOKE?** GRANT dá permissão; REVOKE tira.
-9. **Dá para limitar permissão a uma coluna?** Sim: `GRANT UPDATE (status)`.
-10. **Diferença entre COMMIT e ROLLBACK?** COMMIT confirma; ROLLBACK desfaz o que ainda não foi confirmado.
+6. **O que a trigger 1 impede?** Renovar assinatura de conta suspensa ou cancelada, voltar a data de cobrança no tempo e cobrar fora do dia de vencimento combinado.
+7. **Por que a trigger 2 é AFTER?** Ela altera outra tabela, o que só faz sentido depois que a conta foi atualizada com sucesso.
+8. **Por que as triggers não usam tabela de log?** Para manter exatamente as 13 tabelas do modelo aprovado.
+9. **Diferença entre GRANT e REVOKE?** GRANT dá permissão; REVOKE tira.
+10. **Dá para limitar permissão a uma coluna?** Sim: `GRANT UPDATE (status)`.
+11. **Diferença entre COMMIT e ROLLBACK?** COMMIT confirma; ROLLBACK desfaz o que ainda não foi confirmado.

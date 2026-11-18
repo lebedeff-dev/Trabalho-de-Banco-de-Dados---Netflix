@@ -53,82 +53,87 @@ SELECT * FROM vw_ranking_titulos ORDER BY visualizacoes DESC LIMIT 10;
 -- ==========================================================
 -- TRIGGER 1
 -- Regra:
--- Antes de registrar que um perfil começou a assistir a um
--- título, validar:
---   a) a conta do perfil precisa estar ATIVA;
---   b) perfil infantil só pode assistir a títulos com
---      classificação L ou 10;
---   c) minuto de parada negativo é trocado por 0.
--- As regras (a) e (b) RECUSAM o registro (SIGNAL); a regra (c)
--- corrige o valor e deixa gravar.
+-- Renovar a assinatura é avançar a data_proxima_cobranca da
+-- conta. Antes de gravar a nova data, validar:
+--   a) a conta precisa estar ATIVA (conta suspensa ou
+--      cancelada não renova);
+--   b) a nova data precisa ser POSTERIOR à data atual;
+--   c) a nova data precisa cair no dia de vencimento
+--      combinado com o cliente (dia_vencimento).
+-- Se alguma regra falhar, a renovação é recusada (SIGNAL).
 --
 -- Tipo:
--- BEFORE INSERT
+-- BEFORE UPDATE
 -- ==========================================================
-DROP TRIGGER IF EXISTS tg_validar_visualizacao;
+DROP TRIGGER IF EXISTS tg_validar_renovacao;
 
 DELIMITER //
-CREATE TRIGGER tg_validar_visualizacao
-BEFORE INSERT ON historico_visualizacao
+CREATE TRIGGER tg_validar_renovacao
+BEFORE UPDATE ON dados_cobranca
 FOR EACH ROW
 BEGIN
-    DECLARE v_status        VARCHAR(10);
-    DECLARE v_infantil      TINYINT;
-    DECLARE v_classificacao VARCHAR(2);
+    DECLARE v_status   VARCHAR(10);
+    DECLARE v_mensagem VARCHAR(200);
 
-    -- Dados do perfil e da conta dele
-    SELECT C.status, PF.perfil_infantil
-    INTO v_status, v_infantil
-    FROM perfil PF
-    INNER JOIN conta C ON C.id_conta = PF.id_conta
-    WHERE PF.id_perfil = NEW.id_perfil;
+    -- Só valida quando a data da próxima cobrança foi alterada
+    IF NEW.data_proxima_cobranca <> OLD.data_proxima_cobranca THEN
 
-    -- Classificação do título
-    SELECT classificacao_indicativa
-    INTO v_classificacao
-    FROM titulo
-    WHERE id_titulo = NEW.id_titulo;
+        -- Status atual da conta dona da cobrança
+        SELECT status INTO v_status
+        FROM conta
+        WHERE id_conta = NEW.id_conta;
 
-    -- a) conta precisa estar ativa
-    IF v_status <> 'Ativa' THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Conta suspensa ou cancelada nao pode assistir a titulos.';
-    END IF;
+        -- a) conta precisa estar ativa
+        IF v_status <> 'Ativa' THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Conta suspensa ou cancelada nao pode renovar a assinatura.';
+        END IF;
 
-    -- b) perfil infantil: apenas L ou 10
-    IF v_infantil = 1 AND v_classificacao NOT IN ('L', '10') THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Perfil infantil nao pode assistir a este titulo (classificacao indicativa).';
-    END IF;
+        -- b) a data só pode avançar
+        IF NEW.data_proxima_cobranca <= OLD.data_proxima_cobranca THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'A nova data de cobranca deve ser posterior a data atual.';
+        END IF;
 
-    -- c) minuto negativo vira 0
-    IF NEW.minuto_parada < 0 THEN
-        SET NEW.minuto_parada = 0;
+        -- c) a data precisa cair no dia de vencimento
+        IF DAY(NEW.data_proxima_cobranca) <> NEW.dia_vencimento THEN
+            SET v_mensagem = CONCAT('A cobranca deve cair no dia de vencimento: dia ',
+                                    NEW.dia_vencimento, '.');
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = v_mensagem;
+        END IF;
     END IF;
 END //
 DELIMITER ;
 
--- Caso permitido: o perfil infantil 3 assiste ao título 9
--- (classificação L), informando minuto negativo por engano
-INSERT INTO historico_visualizacao (id_perfil, id_titulo, minuto_parada, dispositivo)
-VALUES (3, 9, -10, 'TV');
+-- Antes: a conta 2 (ativa) tem a próxima cobrança em 24/12/2026
+SELECT id_conta, nome_titular, dia_vencimento, data_proxima_cobranca
+FROM dados_cobranca
+WHERE id_conta = 2;
 
--- Conferindo: o minuto_parada deve aparecer como 0, e não -10
-SELECT id_visualizacao, id_perfil, id_titulo, minuto_parada
-FROM historico_visualizacao
-WHERE id_perfil = 3 AND id_titulo = 9;
+-- Caso permitido: renovação da conta 2 para 24/01/2027
+UPDATE dados_cobranca
+SET data_proxima_cobranca = '2027-01-24'
+WHERE id_conta = 2;
 
--- Caso bloqueado (b): o perfil infantil 3 tenta assistir ao título 1
--- (classificação 18). Gera erro de propósito; tire o "-- " para testar.
--- INSERT INTO historico_visualizacao (id_perfil, id_titulo, dispositivo)
--- VALUES (3, 1, 'TV');
--- Resultado esperado: Error Code 1644. Perfil infantil nao pode assistir...
+-- Conferindo: a data deve aparecer como 2027-01-24
+SELECT id_conta, nome_titular, dia_vencimento, data_proxima_cobranca
+FROM dados_cobranca
+WHERE id_conta = 2;
 
--- Caso bloqueado (a): o perfil 11 pertence a uma conta SUSPENSA.
--- Gera erro de propósito; tire o "-- " para testar.
--- INSERT INTO historico_visualizacao (id_perfil, id_titulo, dispositivo)
--- VALUES (11, 9, 'TV');
+-- Casos bloqueados. Geram erro de propósito; tire o "-- " para testar.
+
+-- (a) a conta 7 está SUSPENSA
+-- UPDATE dados_cobranca SET data_proxima_cobranca = '2027-01-21' WHERE id_conta = 7;
 -- Resultado esperado: Error Code 1644. Conta suspensa ou cancelada...
+
+-- (b) a data volta no tempo
+-- UPDATE dados_cobranca SET data_proxima_cobranca = '2026-11-24' WHERE id_conta = 2;
+-- Resultado esperado: Error Code 1644. A nova data de cobranca deve ser posterior...
+
+-- (c) a data não cai no dia de vencimento (dia 24)
+-- UPDATE dados_cobranca SET data_proxima_cobranca = '2027-02-10' WHERE id_conta = 2;
+-- Resultado esperado: Error Code 1644. A cobranca deve cair no dia de vencimento: dia 24.
 
 -- ==========================================================
 -- TRIGGER 2
@@ -136,6 +141,7 @@ WHERE id_perfil = 3 AND id_titulo = 9;
 -- Quando o status de uma conta muda, a cobrança dela acompanha:
 -- conta Suspensa ou Cancelada -> cobranca_ativa = 0;
 -- conta Ativa novamente       -> cobranca_ativa = 1.
+-- Assim não se cobra de quem não está com a assinatura ativa.
 -- Se o status não mudou (por exemplo, só o telefone foi
 -- alterado), nada é feito.
 --
