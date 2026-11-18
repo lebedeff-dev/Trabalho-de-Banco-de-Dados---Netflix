@@ -995,51 +995,89 @@ WHERE id_conta = 2;
 -- ==========================================================
 -- TRIGGER 2
 -- Regra:
--- Todo perfil novo ganha sua configuração (relacionamento 1:1
--- perfil e configuracao_perfil) automaticamente:
---   a) perfil comum   -> configuração padrão da tabela;
---   b) perfil infantil -> reprodução automática DESLIGADA e
---      qualidade Média.
+-- Quando um título é marcado como indisponível (ou volta a ficar
+-- disponível), as temporadas e os episódios dele acompanham.
+-- Assim, ao tirar uma série do catálogo, nenhuma temporada ou
+-- episódio dela continua aparecendo como disponível.
+-- Se o campo disponivel não mudou (por exemplo, só o nome foi
+-- alterado), nada é feito.
 --
 -- Tipo:
--- AFTER INSERT
+-- AFTER UPDATE
 --
--- É AFTER porque o id_perfil só existe depois que o perfil é
--- gravado. A trigger é disparada por perfil e grava em outra
--- tabela (configuracao_perfil).
+-- A trigger é disparada pela tabela titulo e altera outras duas
+-- tabelas (temporada e episodio).
 -- ==========================================================
-DROP TRIGGER IF EXISTS tg_criar_configuracao_perfil;
+DROP TRIGGER IF EXISTS tg_propagar_disponibilidade;
 
 DELIMITER //
-CREATE TRIGGER tg_criar_configuracao_perfil
-AFTER INSERT ON perfil
+CREATE TRIGGER tg_propagar_disponibilidade
+AFTER UPDATE ON titulo
 FOR EACH ROW
 BEGIN
-    IF NEW.perfil_infantil = 1 THEN
-        INSERT INTO configuracao_perfil (id_perfil, reproducao_automatica, qualidade_preferida)
-        VALUES (NEW.id_perfil, 0, 'Media');
-    ELSE
-        INSERT INTO configuracao_perfil (id_perfil)
-        VALUES (NEW.id_perfil);
+    IF OLD.disponivel <> NEW.disponivel THEN
+
+        -- Temporadas do título
+        UPDATE temporada
+        SET disponivel = NEW.disponivel
+        WHERE id_titulo = NEW.id_titulo;
+
+        -- Episódios das temporadas desse título
+        UPDATE episodio
+        SET disponivel = NEW.disponivel
+        WHERE id_temporada IN (SELECT id_temporada
+                               FROM temporada
+                               WHERE id_titulo = NEW.id_titulo);
     END IF;
 END //
 DELIMITER ;
 
--- Comando que dispara a trigger: a conta 25 (sem perfis) ganha
--- um perfil comum e um perfil infantil
-INSERT INTO perfil (id_conta, nome, data_criacao, perfil_infantil)
-VALUES (25, 'Principal', '2026-11-17', 0);
+-- Antes: a série 1 (Sombras da Capital) está disponível, com
+-- 3 temporadas e 6 episódios
+SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
+       TE.disponivel AS temporada,
+       COUNT(E.id_episodio) AS episodios,
+       SUM(E.disponivel)    AS episodios_disponiveis
+FROM titulo T
+INNER JOIN temporada TE ON TE.id_titulo    = T.id_titulo
+INNER JOIN episodio  E  ON E.id_temporada  = TE.id_temporada
+WHERE T.id_titulo = 1
+GROUP BY T.nome, T.disponivel, TE.numero_temporada, TE.disponivel
+ORDER BY TE.numero_temporada;
 
-INSERT INTO perfil (id_conta, nome, data_criacao, perfil_infantil)
-VALUES (25, 'Kids', '2026-11-17', 1);
+-- Comando que dispara a trigger: a série 1 sai do catálogo
+UPDATE titulo
+SET disponivel = 0
+WHERE id_titulo = 1;
 
--- Conferindo: cada perfil já tem a sua configuração; o Kids está
--- com reproducao_automatica = 0 e qualidade Media
-SELECT P.id_perfil, P.nome, P.perfil_infantil,
-       C.reproducao_automatica, C.qualidade_preferida
-FROM perfil P
-INNER JOIN configuracao_perfil C ON C.id_perfil = P.id_perfil
-WHERE P.id_conta = 25;
+-- Conferindo: título, temporadas e episódios aparecem com 0
+SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
+       TE.disponivel AS temporada,
+       COUNT(E.id_episodio) AS episodios,
+       SUM(E.disponivel)    AS episodios_disponiveis
+FROM titulo T
+INNER JOIN temporada TE ON TE.id_titulo    = T.id_titulo
+INNER JOIN episodio  E  ON E.id_temporada  = TE.id_temporada
+WHERE T.id_titulo = 1
+GROUP BY T.nome, T.disponivel, TE.numero_temporada, TE.disponivel
+ORDER BY TE.numero_temporada;
+
+-- A série 1 volta ao catálogo e tudo volta a ficar disponível
+UPDATE titulo
+SET disponivel = 1
+WHERE id_titulo = 1;
+
+-- Conferindo: tudo volta a 1
+SELECT T.nome, T.disponivel AS titulo, TE.numero_temporada,
+       TE.disponivel AS temporada,
+       COUNT(E.id_episodio) AS episodios,
+       SUM(E.disponivel)    AS episodios_disponiveis
+FROM titulo T
+INNER JOIN temporada TE ON TE.id_titulo    = T.id_titulo
+INNER JOIN episodio  E  ON E.id_temporada  = TE.id_temporada
+WHERE T.id_titulo = 1
+GROUP BY T.nome, T.disponivel, TE.numero_temporada, TE.disponivel
+ORDER BY TE.numero_temporada;
 
 -- ----------------------------------------------------------
 -- USUÁRIOS E PERMISSÕES
