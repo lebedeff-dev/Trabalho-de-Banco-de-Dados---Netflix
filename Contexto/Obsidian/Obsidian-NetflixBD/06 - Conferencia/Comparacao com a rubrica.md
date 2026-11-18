@@ -6,7 +6,7 @@ Conferência feita em 17/11/2026, rodando `sql/netflix_bd.sql` completo num MySQ
 
 | Item do template | Entregue | Situação |
 |---|---|---|
-| Cabeçalho: identificação do grupo e "alterações na modelagem" | 3 integrantes; marcado "Não" (matrícula do Kaio pendente) | Atende (falta a matrícula) |
+| Cabeçalho: identificação do grupo e "alterações na modelagem" | 3 integrantes; marcado "Não" e matrículas dos três | Atende |
 | 1. Banco e tabelas conforme a modelagem | 13 tabelas, 13 PK, 12 FK, 12 UNIQUE, iguais ao modelo aprovado | Atende |
 | 2. Mínimo de 30 INSERT por tabela | 392 INSERT: 30 em cada tabela (conta tem 32) | Atende |
 | 3. Pelo menos um índice, com justificativa | 2 índices, justificativa no script | Atende |
@@ -36,10 +36,9 @@ Conferência feita em 17/11/2026, rodando `sql/netflix_bd.sql` completo num MySQ
 1. **Índice e view**: os scripts da professora não têm exemplo; só o PDF *06 - DDL* cita os dois. Usei a forma mais simples.
 2. **`DROP DATABASE IF EXISTS` no início** e **`DROP USER IF EXISTS`** antes da criação dos usuários: servem para o script poder rodar mais de uma vez. O exemplo de exclusão pedido pelo template está na seção 4 (comentado) e na seção 6 (`DROP USER analista`).
 3. **Testado em MySQL 8.0** numa instância separada nesta máquina. Vale rodar uma vez no seu Workbench antes de entregar.
-4. Matrículas no cabeçalho: Luis Eduardo `UC25200028` e Luís Guilherme `UC25200734`. A do Kaio ainda falta.
+4. Matrículas no cabeçalho: Luis Eduardo `UC25200028` e Luís Guilherme `UC25200734`. Kaio `UC25200147`.
 
 ## O que falta fazer (não é do script)
 
-- [ ] Matrícula do Kaio no cabeçalho.
 - [ ] Rodar `sql/netflix_bd.sql` no seu MySQL Workbench.
 - [ ] **Enviar o arquivo no AVA até 18/11/2026 às 23:59** e comparecer à apresentação.

@@ -11,6 +11,6 @@ Um arquivo só, na estrutura do [[Template da professora]]. Estilo em [[Padroes 
 - [x] README e commits no GitHub
 
 ## Falta (por sua conta)
-- [ ] Matrícula do Kaio no cabeçalho do script
+- [x] Matrículas dos três no cabeçalho do script
 - [ ] Rodar o arquivo no seu MySQL Workbench
 - [ ] Enviar no AVA até **18/11/2026 23:59**

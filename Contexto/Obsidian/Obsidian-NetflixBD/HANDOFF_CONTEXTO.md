@@ -13,7 +13,7 @@ Leia isto primeiro se você é uma IA ou pessoa retomando o trabalho.
 8. **O script segue o template da professora** ([[Template da professora]], arquivo `Contexto/Proposta/Template - Projeto - Implementacao.sql`) e **não inclui nada que o template não peça**, para facilitar a explicação na apresentação.
 
 ## Estado atual (17/11/2026)
-O script `sql/netflix_bd.sql` está na estrutura do template (seções 1 a 6) e testado em MySQL 8. Conferência em [[Comparacao com a rubrica]]. Falta: matrícula do Kaio no cabeçalho, rodar no Workbench do dono e enviar no AVA.
+O script `sql/netflix_bd.sql` está na estrutura do template (seções 1 a 6) e testado em MySQL 8. Conferência em [[Comparacao com a rubrica]]. Falta: rodar no Workbench do dono e enviar no AVA.
 
 Grupo (modelo lógico em PDF): Luis Eduardo de Andrade Neves, Luís Guilherme Lebedeff Rocha Mota e Kaio Ramos Luiz. A professora avisou que **vai cobrar as triggers**: por isso são duas bem elaboradas (BEFORE que valida a renovação da assinatura com `DECLARE`, `SELECT INTO` e `SIGNAL`; AFTER que cria a configuração de cada perfil novo, com `IF/ELSE` para perfil infantil). O dono pediu triggers práticas (renovação, não visualização) e de assuntos diferentes entre si (cobrança e cadastro de perfil). Ver [[Parte 6 - Recursos adicionais (explicacao)]].
 

@@ -8,7 +8,7 @@
 | Prazo | **18/11/2026 às 23:59** |
 | SGBD | MySQL (é o que a professora usa nos scripts) |
 | Tema | Netflix (modelo do 1º trabalho, 13 tabelas) |
-| Grupo | Luis Eduardo de Andrade Neves, Luís Guilherme Lebedeff Rocha Mota e Kaio Ramos Luiz (matrícula do Kaio pendente no cabeçalho) |
+| Grupo | Luis Eduardo de Andrade Neves, Luís Guilherme Lebedeff Rocha Mota e Kaio Ramos Luiz |
 | Entrega | `sql/netflix_bd.sql` (um arquivo, na estrutura do template da professora) |
 | Para apresentar | `sql/Script Versionado/` (o mesmo script em 6 arquivos, 01 a 06) |
 
@@ -40,6 +40,6 @@
 - [x] 5: 10 consultas na distribuição do template
 - [x] 6: 3 views, 2 triggers (BEFORE e AFTER), 3 usuários (1 excluído, 2 com REVOKE), COMMIT e ROLLBACK
 - [x] Script completo e os 6 arquivos testados em MySQL 8
-- [ ] Preencher a matrícula do Kaio no cabeçalho
+- [x] Matrículas dos três no cabeçalho
 - [ ] Rodar no seu MySQL Workbench
 - [ ] **Enviar no AVA até 18/11/2026 23:59** (e comparecer à apresentação: sem presença a nota é zero)

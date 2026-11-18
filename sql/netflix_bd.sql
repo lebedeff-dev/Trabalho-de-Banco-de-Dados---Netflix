@@ -4,7 +4,7 @@ Banco de dados NETFLIX
 Identificação do Grupo:
 LUIS EDUARDO DE ANDRADE NEVES - UC25200028
 LUÍS GUILHERME LEBEDEFF ROCHA MOTA - UC25200734
-KAIO RAMOS LUIZ - MATRÍCULA A INFORMAR
+KAIO RAMOS LUIZ - UC25200147
 
 Alterações na Modelagem
 Indique se houve alterações na modelagem de dados:
