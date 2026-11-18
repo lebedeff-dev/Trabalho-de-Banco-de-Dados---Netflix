@@ -1,11 +1,11 @@
 -- ==========================================================
--- BANCO DE DADOS NETFLIX - ARQUIVO 01 DE 09
--- Critério da atividade: Estrutura do banco de dados
+-- BANCO DE DADOS NETFLIX - ARQUIVO 01 DE 06
+-- Seção do template da atividade: 1. Criação do banco de dados e estrutura
 -- Primeiro arquivo: apaga e recria o banco.
 -- ==========================================================
 
 -- ==========================================================
--- PARTE 1 - ESTRUTURA DO BANCO
+-- 1. CRIAÇÃO DO BANCO DE DADOS E ESTRUTURA
 -- ==========================================================
 
 DROP DATABASE IF EXISTS NETFLIX;

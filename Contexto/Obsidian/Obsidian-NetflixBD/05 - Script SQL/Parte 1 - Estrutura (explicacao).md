@@ -1,4 +1,4 @@
-# Parte 1 - Estrutura (explicação para apresentar)
+# Seção 1 - Estrutura (explicação para apresentar)
 
 Arquivo: `sql/netflix_bd.sql` · Critério da rubrica: **Estrutura do banco (3 pts)**.
 Testado em MySQL 8: roda sem erro, cria **13 tabelas e 12 FKs**, e pode ser executado várias vezes.

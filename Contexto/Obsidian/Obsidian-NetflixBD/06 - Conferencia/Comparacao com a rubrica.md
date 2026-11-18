@@ -1,34 +1,45 @@
-# Comparação do resultado com a rubrica
+# Comparação do resultado com a rubrica e o template
 
-Conferência feita em 16/11/2026, rodando `sql/netflix_bd.sql` completo num MySQL 8 (duas vezes seguidas, sem erro) e consultando o próprio banco.
+Conferência feita em 17/11/2026, rodando `sql/netflix_bd.sql` completo num MySQL 8 (sem erro) e os 6 arquivos de `sql/Script Versionado` em ordem (sem erro). Os comandos comentados da seção 4 e os casos de erro dos triggers foram testados à parte.
 
-## Critério por critério (nível 4 = 3 pontos)
+## Template da professora, item por item ([[Template da professora]])
 
-| Critério | O que o nível 4 pede | O que foi entregue | Evidência | Situação |
-|---|---|---|---|---|
-| **Estrutura do banco** | Banco criado e tabelas conforme a modelagem, com PK, FK e relacionamentos | 13 tabelas iguais ao modelo aprovado (12/12) | No banco: 13 tabelas, 13 PK, 12 FK, 12 UNIQUE; regras CASCADE/RESTRICT iguais às do `.mwb` | Atende |
-| **Inserção de dados** | No mínimo 30 INSERT em **todas** as tabelas | 392 INSERT: exatamente 30 em cada tabela (`conta` tem 32) | Contagem no arquivo e no banco: as 13 tabelas têm 30 (conta: 32) | Atende |
-| **Consultas SQL** | Consultas corretas, com JOINs, filtros, agrupamentos e ordenação | 12 consultas, todas devolvem linhas | INNER, LEFT, RIGHT e SELF JOIN; WHERE (AND/OR/LIKE/IS NULL); GROUP BY; HAVING; ORDER BY; LIMIT | Atende |
-| **Scripts adicionais e índices** | Índice + scripts adicionais, **com justificativa do campo indexado** | 2 índices com justificativa escrita + 3 stored procedures | `idx_titulo_nome`, `idx_historico_data_inicio` (usados pelo MySQL, conferido com EXPLAIN); 3 procedures com `CALL` | Atende (ver ressalva 1) |
-| **Recursos adicionais** | Views, triggers, usuários, permissões e transações | 3 views, 3 triggers, 5 usuários, 11 GRANT/REVOKE, 4 transações | Triggers testadas (-10 virou 0; dia 31 virou 28; valor negativo ignorado); permissões testadas entrando com cada usuário; ROLLBACK e SAVEPOINT conferidos | Atende |
+| Item do template | Entregue | Situação |
+|---|---|---|
+| Cabeçalho: identificação do grupo e "alterações na modelagem" | 3 integrantes; marcado "Não" (matrícula do Kaio pendente) | Atende (falta a matrícula) |
+| 1. Banco e tabelas conforme a modelagem | 13 tabelas, 13 PK, 12 FK, 12 UNIQUE, iguais ao modelo aprovado | Atende |
+| 2. Mínimo de 30 INSERT por tabela | 392 INSERT: 30 em cada tabela (conta tem 32) | Atende |
+| 3. Pelo menos um índice, com justificativa | 2 índices, justificativa no script | Atende |
+| 4. Seis exemplos comentados (DROP DATABASE, DROP TABLE, DROP COLUMN, ADD COLUMN, UPDATE e DELETE de um registro) | Os 6, comentados | Atende |
+| 5. 2 simples, 4 INNER (2 tabelas), 1 LEFT, 1 RIGHT, 1 com 3 tabelas, 1 com 4 tabelas | 10 consultas, todas com linhas; nenhuma é só SELECT/FROM/ORDER BY | Atende |
+| 6. 3 views | 3 | Atende |
+| 6. 2 triggers, 1 BEFORE e 1 AFTER | `tg_validar_visualizacao` (BEFORE INSERT) e `tg_sincronizar_cobranca` (AFTER UPDATE) | Atende |
+| 6. 3 usuários com permissões distintas | admin_netflix, analista, atendente | Atende |
+| 6. Excluir 1 usuário | `DROP USER analista` | Atende |
+| 6. Revogar privilégios de 2 usuários | admin_netflix (DELETE, DROP) e atendente (UPDATE em status) | Atende |
+| 6. COMMIT e ROLLBACK | 1 exemplo de cada | Atende |
+| Um único arquivo `.sql` | `sql/netflix_bd.sql` | Atende |
+| Nada além do pedido | Sem procedures, sem SAVEPOINT, sem consultas extras | Atende |
 
-## Regras do trabalho
+## Critérios da rubrica (nível 4 = 3 pontos cada)
 
-| Regra | Situação |
+| Critério | Evidência |
 |---|---|
-| Fiel ao modelo lógico aprovado | Sim: mesmas 13 tabelas, campos, tipos, UNIQUE e regras de FK. Nenhuma tabela a mais |
-| Só o que está nos materiais da professora | Sim. Cada recurso tem a fonte anotada nas notas de explicação |
-| Um arquivo `.sql` | Sim: `sql/netflix_bd.sql`, na ordem dos critérios |
+| Estrutura do banco | 13 tabelas iguais ao modelo; regras CASCADE/RESTRICT iguais às do `.mwb` |
+| Inserção de dados | Contagem no arquivo e no banco: 30 em cada tabela |
+| Consultas SQL | JOINs, filtros (AND/OR/LIKE/IS NULL), GROUP BY, HAVING, ORDER BY, LIMIT |
+| Scripts adicionais e índices | 2 índices justificados + 6 exemplos comentados |
+| Recursos adicionais | Triggers testadas (minuto -10 virou 0; perfil infantil e conta suspensa bloqueados; cobrança 1 → 0 → 1); permissões e REVOKE conferidos com `SHOW GRANTS`; ROLLBACK devolveu 55,90 |
 
-## Ressalvas (o que não dá para garantir)
+## Ressalvas
 
-1. **"Scripts adicionais solicitados"**: a rubrica não diz quais são, e a página da atividade não tem enunciado. Interpretei como as **stored procedures**, que são o único tipo de script dos materiais dela ainda não coberto pelos outros critérios. Se a professora tiver dito em aula outra coisa, falta incluir.
-2. **Índice e view**: os scripts dela não têm exemplo; só o PDF *06 - DDL* cita os dois. Usei a forma mais simples.
-3. **Formas pequenas que não aparecem literalmente nos scripts dela**, mas são o mesmo comando: `UNIQUE` com duas colunas (já estava no modelo aprovado), `DROP USER IF EXISTS` e `ON DELETE RESTRICT`.
-4. **Testado em MySQL 8.0** instalado nesta máquina, numa instância separada. Vale rodar uma vez no seu Workbench antes de entregar.
+1. **Índice e view**: os scripts da professora não têm exemplo; só o PDF *06 - DDL* cita os dois. Usei a forma mais simples.
+2. **`DROP DATABASE IF EXISTS` no início** e **`DROP USER IF EXISTS`** antes da criação dos usuários: servem para o script poder rodar mais de uma vez. O exemplo de exclusão pedido pelo template está na seção 4 (comentado) e na seção 6 (`DROP USER analista`).
+3. **Testado em MySQL 8.0** numa instância separada nesta máquina. Vale rodar uma vez no seu Workbench antes de entregar.
+4. A matrícula de Luis Eduardo foi passada como `UC2520028` (uma casa a menos que a sua): confira.
 
 ## O que falta fazer (não é do script)
 
-- [ ] Rodar `sql/netflix_bd.sql` no seu MySQL Workbench e ver o resultado.
-- [ ] **Enviar o arquivo no AVA até 18/11/2026 às 23:59.**
-- [ ] Ler as notas de explicação em `05 - Script SQL`.
+- [ ] Matrícula do Kaio no cabeçalho.
+- [ ] Rodar `sql/netflix_bd.sql` no seu MySQL Workbench.
+- [ ] **Enviar o arquivo no AVA até 18/11/2026 às 23:59** e comparecer à apresentação.

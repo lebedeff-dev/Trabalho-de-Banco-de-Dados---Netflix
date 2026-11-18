@@ -1,13 +1,13 @@
 -- ==========================================================
--- BANCO DE DADOS NETFLIX - ARQUIVO 02 DE 09
--- Critério da atividade: Inserção de dados
+-- BANCO DE DADOS NETFLIX - ARQUIVO 02 DE 06
+-- Seção do template da atividade: 2. Inserção de dados (mínimo de 30 INSERT por tabela)
 -- Pré-requisito: executar antes os arquivos 01 a 01, nesta ordem.
 -- ==========================================================
 
 USE NETFLIX;
 
 -- ==========================================================
--- PARTE 2 - INSERÇÃO DE DADOS
+-- 2. INSERÇÃO DE DADOS
 -- ----------------------------------------------------------
 -- Os dados foram pensados para que as consultas (JOINs) tenham
 -- casos "sem correspondência", como no exemplo da professora:

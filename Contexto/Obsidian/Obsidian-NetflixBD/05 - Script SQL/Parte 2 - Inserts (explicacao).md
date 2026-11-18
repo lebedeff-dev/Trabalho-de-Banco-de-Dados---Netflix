@@ -1,6 +1,6 @@
-# Parte 2 - Inserts (explicação para apresentar)
+# Seção 2 - Inserts (explicação para apresentar)
 
-Arquivo: `sql/netflix_bd.sql` (seção PARTE 2) · Critério da rubrica: **Inserção de dados (3 pts)**: "no mínimo 30 comandos INSERT em cada tabela".
+Arquivo: `sql/netflix_bd.sql` (seção 2) · Critério da rubrica: **Inserção de dados (3 pts)**: "no mínimo 30 comandos INSERT em cada tabela".
 Testado em MySQL 8: o arquivo inteiro roda sem erro, inclusive duas vezes seguidas (ele recria o banco).
 
 ## Resultado (conferido no banco)
@@ -59,13 +59,13 @@ Também cuidei da coerência: `minuto_parada` nunca passa da duração do títul
 
 ## Casos "sem correspondência" (de propósito)
 
-A professora planeja os dados para que **LEFT/RIGHT JOIN tenham o que mostrar** (cliente sem pedido, produto nunca vendido). Fiz igual. Os ids exatos estão no comentário no começo da Parte 2 do script:
+A professora planeja os dados para que **LEFT/RIGHT JOIN tenham o que mostrar** (cliente sem pedido, produto nunca vendido). Fiz igual. Os ids exatos estão no comentário no começo da seção 2 do script:
 
 - planos sem nenhuma conta · contas sem perfil · contas sem dados de cobrança
 - categorias sem títulos · títulos sem categoria · pessoas sem participação
 - títulos nunca assistidos · temporadas sem episódios
 
-**Por que isso importa:** num `INNER JOIN` essas linhas somem; no `LEFT JOIN` elas aparecem com `NULL`. É a diferença que a Parte 3 (consultas) vai demonstrar.
+**Por que isso importa:** num `INNER JOIN` essas linhas somem; no `LEFT JOIN` elas aparecem com `NULL`. É a diferença que a seção 5 (consultas) vai demonstrar.
 
 ## Perguntas prováveis
 

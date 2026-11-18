@@ -10,6 +10,8 @@ Fonte: `Contexto/Proposta/AT1 - Projeto - Implementacao (rubrica).pdf`. A págin
 | Scripts adicionais e índices | Criação de **índice** + todos os scripts adicionais, **com justificativa do campo indexado** |
 | Recursos adicionais | **Views, triggers, usuários, permissões e comandos de transação** |
 
+O que cada critério significa na prática está no [[Template da professora]] (arquivo `.sql` com a estrutura obrigatória).
+
 ## Faixas de nota (total /15)
 - Nível 4: 11 pontos ou mais
 - Nível 3: 8 pontos ou mais
